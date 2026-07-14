@@ -81,6 +81,65 @@ bin/
 
 Copy the DLL into the BepInEx plugins folder to test.
 
+## Dependencies
+
+### Runtime Dependencies
+
+The following are required to run the mod:
+
+- **Star Ocean: The Second Story R (PC version)**
+  - A legitimate copy of the game is required.
+- **BepInEx IL2CPP**
+  - Required mod loader.
+  - Provides plugin loading, IL2CPP interop, and Harmony patching.
+
+## Development Dependencies
+
+The following are required to build the mod from source:
+
+### Required Software
+
+- **Visual Studio 2022**
+  - Workload: `.NET desktop development`
+- **.NET 8 SDK**
+- **Git**
+
+### BepInEx Development Assemblies
+
+The project references assemblies generated/provided by BepInEx:
+
+```
+BepInEx/core/
+├── BepInEx.Core.dll
+├── BepInEx.Unity.IL2CPP.dll
+├── 0Harmony.dll
+└── Il2CppInterop.Runtime.dll
+```
+
+### Game IL2CPP Interop Assemblies
+
+After installing BepInEx and launching the game once, IL2CPP interop assemblies will be generated:
+
+```
+BepInEx/interop/
+├── Il2Cppmscorlib.dll
+├── UnityEngine.CoreModule.dll
+├── UnityEngine.IMGUIModule.dll
+└── Assembly-CSharp.dll
+```
+
+These files are generated from the game installation and are **not included in this repository**.
+
+Developers must generate their own copies.
+
+## Setting Up a Development Environment
+
+1. Install BepInEx IL2CPP into the game directory.
+2. Launch the game once to generate interop assemblies.
+3. Clone this repository.
+4. Update project references to point to your local BepInEx and interop assemblies.
+5. Build the solution.
+
 ## Modding Notes
 
 This project targets the IL2CPP version of Unity used by Star Ocean: The Second Story R.
