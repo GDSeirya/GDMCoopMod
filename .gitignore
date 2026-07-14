@@ -1,0 +1,53 @@
+# Build output
+bin/
+obj/
+
+# Visual Studio files
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# Build artifacts
+*.dll
+*.pdb
+*.mdb
+
+# BepInEx generated files
+BepInEx/
+!BepInEx/plugins/
+
+# Unity generated IL2CPP files
+interop/
+Il2CppAssemblyUnhollower/
+DummyDll/
+
+# Logs
+*.log
+Logs/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Game files (if repo is inside game directory)
+*_Data/
+*.exe
+*.dll.config
+
+# NuGet
+packages/
+*.nupkg
+
+# VS Code
+.vscode/
