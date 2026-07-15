@@ -1,12 +1,15 @@
 ﻿using BepInEx.Unity.IL2CPP.Configuration;
+using Game;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using BepInEx.Logging;
 
 public class RyMCoopOverlay : MonoBehaviour
 {
     private bool showOverlay = true;
     private Gamepad playerOneController;
     private KeyboardShortcut toggleKey = new KeyboardShortcut(KeyCode.F1);
+    private KeyboardShortcut debugKey = new KeyboardShortcut(KeyCode.F2);
     private RyMOverlayEntry overlayEntry;
 
     public void Start()
@@ -20,6 +23,21 @@ public class RyMCoopOverlay : MonoBehaviour
         if (toggleKey.IsDown())
         {
             showOverlay = !showOverlay;
+        }
+        if (debugKey.IsDown())
+        {
+            RyMCoopPlugin.StaticLog.LogInfo($"Debug Triggered");
+            if (PartyManager.Instance != null )
+            {
+                RyMCoopPlugin.StaticLog.LogInfo(PartyManager.Instance.GetPartyMemberCount().ToString());
+            }
+            else
+            {
+                RyMCoopPlugin.StaticLog.LogInfo($"No Party Instance");
+            }
+            if (BattleManager.Instance != null)
+            {
+            }
         }
         // Refresh controller reference
         if (Gamepad.all.Count > 0)
