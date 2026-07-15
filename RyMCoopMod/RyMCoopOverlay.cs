@@ -10,6 +10,7 @@ public class RyMCoopOverlay : MonoBehaviour
     private Gamepad playerOneController;
     private KeyboardShortcut toggleKey = new KeyboardShortcut(KeyCode.F1);
     private KeyboardShortcut debugKey = new KeyboardShortcut(KeyCode.F2);
+    private KeyboardShortcut tiertiaryKey = new KeyboardShortcut(KeyCode.F3);
     private RyMOverlayEntry overlayEntry;
 
     public void Start()
@@ -27,18 +28,45 @@ public class RyMCoopOverlay : MonoBehaviour
         if (debugKey.IsDown())
         {
             RyMCoopPlugin.StaticLog.LogInfo($"Debug Triggered");
-            if (PartyManager.Instance != null )
+
+            if (BattleManager.Instance != null)
             {
-                RyMCoopPlugin.StaticLog.LogInfo(PartyManager.Instance.GetPartyMemberCount().ToString());
+                RyMCoopPlugin.StaticLog.LogInfo($"ControlPlayerIndex: {BattleManager.Instance.ControlPlayerIndex}");
+                RyMCoopPlugin.StaticLog.LogInfo($"IsEnabled: {BattleManager.Instance.enabled}");
+                RyMCoopPlugin.StaticLog.LogInfo($"PlayerCount: {BattleManager.Instance.battlePlayerList.Count}");
+                
+
+
+            }
+            else
+            {
+                RyMCoopPlugin.StaticLog.LogInfo($"No Battle Instance");
+            }
+        }
+        if (tiertiaryKey.IsDown())
+        {
+            if (PartyManager.Instance != null)
+            {
+                if (PartyManager.Instance.GetPartyMemberCount() < 7)
+                {
+                    PartyManager.instance.JoinMember(PlayerID.DIAS, false);
+                    PartyManager.instance.JoinMember(PlayerID.LEON, false);
+                    //PartyManager.instance.AddUpdatedMember(PlayerID.OPERA, true, true);
+                    //PartyManager.instance.BreakawayMember(PlayerID.OPERA);
+                    //BattleManager.instance.GetPlayer(PlayerID.CLAUDE).characterController = null;
+                    //RyMCoopPlugin.StaticLog.LogInfo($"Added Ashton to Party Members");
+                }
+                else
+                {
+                    RyMCoopPlugin.StaticLog.LogInfo($"Cannot add more party members");
+                }
             }
             else
             {
                 RyMCoopPlugin.StaticLog.LogInfo($"No Party Instance");
             }
-            if (BattleManager.Instance != null)
-            {
-            }
         }
+        
         // Refresh controller reference
         if (Gamepad.all.Count > 0)
         {
