@@ -3,6 +3,18 @@ using Game;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using BepInEx.Logging;
+using HarmonyLib;
+
+[HarmonyPatch(typeof(BattleManager))]
+public class BattleManagerPatch
+{
+    [HarmonyPatch("OnUpdate")]
+    [HarmonyPostfix]
+    public static void Postfix()
+    {
+        RyMCoopPlugin.StaticLog.LogInfo("BattleManager Update!");
+    }
+}
 
 public class RyMCoopOverlay : MonoBehaviour
 {
@@ -34,7 +46,82 @@ public class RyMCoopOverlay : MonoBehaviour
                 RyMCoopPlugin.StaticLog.LogInfo($"ControlPlayerIndex: {BattleManager.Instance.ControlPlayerIndex}");
                 RyMCoopPlugin.StaticLog.LogInfo($"IsEnabled: {BattleManager.Instance.enabled}");
                 RyMCoopPlugin.StaticLog.LogInfo($"PlayerCount: {BattleManager.Instance.battlePlayerList.Count}");
-                
+                if (BattleManager.Instance.battlePlayerList.Count > 0)
+                {
+                    for (int i = 0; i < BattleManager.Instance.battlePlayerList.Count; i++)
+                    {
+                        RyMCoopPlugin.StaticLog.LogInfo($"Player[{i}]");
+                        /* TRIED: 
+                         * enableAIMove
+                         * EnableAIFromSystem
+                         * 
+                         */
+                        /*
+                        RyMCoopPlugin.StaticLog.LogInfo($"AI_INERVAL[{i}]:{BattleManager.Instance.battlePlayerList[i].BattleAIController.aiInterval}");
+                        RyMCoopPlugin.StaticLog.LogInfo($"ITEM_ID[{i}]:{BattleManager.Instance.battlePlayerList[i].BattleAIController.actionParameter.ItemID}");
+                        RyMCoopPlugin.StaticLog.LogInfo($"BATTLE_SKILL[{i}]:{BattleManager.Instance.battlePlayerList[i].BattleAIController.actionParameter.BattleSkillID}");
+                        */
+
+
+                        //RyMCoopPlugin.StaticLog.LogInfo($"CHAR_CONTROLLER_CURR_STATE[{i}]:{BattleManager.Instance.battlePlayerList[1].characterController}");
+
+
+                        if (i > -1)
+                        {
+                            //BattleManager.Instance.battlePlayerList[i].BattleAIController.enableAIMove = false;
+                        }
+                        if (i == 1)
+                        {
+                            //BattleManager.Instance.battlePlayerList[i].characterController
+                            //RyMCoopPlugin.StaticLog.LogInfo($"MOVE_COMMAND");
+                            //BattleManager.Instance.battlePlayerList[i].AddPosition = BattleManager.Instance.battlePlayerList[i].Position + new Vector3(0.1f, 0, 0.1f);
+                            //BattleManager.Instance.battlePlayerList[i].BattleAIController.AIMoveController.aiMoveResult.moveDir;
+                            /*
+                            RyMCoopPlugin.StaticLog.LogInfo($"########");
+                            RyMCoopPlugin.StaticLog.LogInfo($"MOVEDIR:{BattleManager.Instance.battlePlayerList[i].BattleAIController.AIMoveController.aiMoveResult.moveDir}");
+                            RyMCoopPlugin.StaticLog.LogInfo($"ISRUN:{BattleManager.Instance.battlePlayerList[i].BattleAIController.AIMoveController.aiMoveResult.isRun}");
+                            RyMCoopPlugin.StaticLog.LogInfo($"MOVERATE:{BattleManager.Instance.battlePlayerList[i].BattleAIController.AIMoveController.aiMoveResult.moveRate}");
+                            RyMCoopPlugin.StaticLog.LogInfo($"TURNRATE:{BattleManager.Instance.battlePlayerList[i].BattleAIController.AIMoveController.aiMoveResult.turnRate}");
+                            RyMCoopPlugin.StaticLog.LogInfo($"DIRECTION_VECOTR:{BattleManager.Instance.battlePlayerList[i].BattleAIController.AIMoveController.Direction}");
+                            RyMCoopPlugin.StaticLog.LogInfo($"HOME_POSITION:{BattleManager.Instance.battlePlayerList[i].BattleAIController.AIMoveController.AIParameter.HomePosition}");
+                            RyMCoopPlugin.StaticLog.LogInfo($"DESTINATION_VECTOR:{BattleManager.Instance.battlePlayerList[i].BattleAIController.AIMoveController.destination}");
+                            RyMCoopPlugin.StaticLog.LogInfo($"FINELDESTIN_VECTOR:{BattleManager.Instance.battlePlayerList[i].BattleAIController.AIMoveController.finalDestination}");
+                            RyMCoopPlugin.StaticLog.LogInfo($"IS_DISABLE_RUN:{BattleManager.Instance.battlePlayerList[i].BattleAIController.AIMoveController.isDisableRun}");
+                            RyMCoopPlugin.StaticLog.LogInfo($"IS_WALK:{BattleManager.Instance.battlePlayerList[i].BattleAIController.AIMoveController.isWalk}");
+                            RyMCoopPlugin.StaticLog.LogInfo($"MOVESPEED_RATE:{BattleManager.Instance.battlePlayerList[i].BattleAIController.AIMoveController.moveSpeedRate}");
+                            RyMCoopPlugin.StaticLog.LogInfo($"MOVE_STATE:{BattleManager.Instance.battlePlayerList[i].BattleAIController.AIMoveController.moveState}");
+                            RyMCoopPlugin.StaticLog.LogInfo($"AI_MOVE_STATE:{BattleManager.Instance.battlePlayerList[i].BattleAIController.AIMoveController.State}");
+                            RyMCoopPlugin.StaticLog.LogInfo($"AI_MOVE_MOVE_STATE:{BattleManager.Instance.battlePlayerList[i].BattleAIController.AIMoveController.moveState}");
+                            RyMCoopPlugin.StaticLog.LogInfo($"AI_PARAM_FLAG_COUNT:{BattleManager.Instance.battlePlayerList[i].BattleAIController.AIParameter.aiFlag.flagCount}");
+                            */
+                            /*
+                            for(int j = 0; i < BattleManager.Instance.battlePlayerList[i].BattleAIController.AIParameter.aiFlag.bitFlag.Count; i++)
+                            {
+                                RyMCoopPlugin.StaticLog.LogInfo($"AI_FLAGS{j}:{BattleManager.Instance.battlePlayerList[i].BattleAIController.AIParameter.aiFlag.bitFlag[j].ToString()}");
+                            }
+                            RyMCoopPlugin.StaticLog.LogInfo($"########");
+                            */
+                            /*
+                            RyMCoopPlugin.StaticLog.LogInfo($"########");
+                            Vector3 initVector = new Vector3(BattleManager.Instance.battlePlayerList[1].Position.x, BattleManager.Instance.battlePlayerList[1].Position.y, BattleManager.Instance.battlePlayerList[1].Position.z);
+                            RyMCoopPlugin.StaticLog.LogInfo($"Init Move Vector{initVector.ToString()}");
+                            Vector3 finalVector = new Vector3(initVector.x - 5f, 0, initVector.z + 5f);
+                            RyMCoopPlugin.StaticLog.LogInfo($"Final Move Vector{finalVector.ToString()}");
+                            BattleManager.Instance.battlePlayerList[1].battleAIController.aiMoveController.destination = initVector;
+                            BattleManager.Instance.battlePlayerList[1].battleAIController.aiMoveController.finalDestination = finalVector;
+                            BattleManager.Instance.battlePlayerList[1].CharacterController.
+
+
+
+
+                            RyMCoopPlugin.StaticLog.LogInfo($"########");
+                            */
+                            //var arga = new BattleChangeControlPlayerInputTask();
+                            //arga.exe
+                        }
+                    }
+                    //RyMCoopPlugin.StaticLog.LogInfo($"List Completed");
+                }
 
 
             }
