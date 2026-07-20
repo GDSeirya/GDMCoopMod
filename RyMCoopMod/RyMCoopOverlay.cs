@@ -4,18 +4,67 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using BepInEx.Logging;
 using HarmonyLib;
+using System.Collections.Generic;
+using UnityEngine.Playables;
+using System;
+using System.Runtime.CompilerServices;
 
-[HarmonyPatch(typeof(BattleManager))]
-public class BattleManagerPatch
+
+[HarmonyPatch(typeof(BattleAIController), "AIRun")]
+public static class BattleAIControllerPatch
 {
-    [HarmonyPatch("OnUpdate")]
-    [HarmonyPostfix]
-    public static void Postfix()
+    private static KeyboardShortcut holyOn = new KeyboardShortcut(KeyCode.F5);
+    private static KeyboardShortcut holyOff = new KeyboardShortcut(KeyCode.F6);
+    private static KeyboardShortcut holyAction = new KeyboardShortcut(KeyCode.F7);
+    private static bool holyToggleFlag = false;
+    private static bool isInit = false;
+
+    [HarmonyPrefix]
+    public static void Update()
     {
-        RyMCoopPlugin.StaticLog.LogInfo("BattleManager Update!");
+        if (holyOn.IsDown())
+        {
+            holyToggleFlag = true;
+            RyMCoopPlugin.StaticLog.LogInfo($"Toggled Holy1 {holyToggleFlag.ToString()}");
+        }
+        if (holyOff.IsDown())
+        {
+            holyToggleFlag = false;
+            RyMCoopPlugin.StaticLog.LogInfo($"Toggled Holy2 {holyToggleFlag.ToString()}");
+        }
+    }
+
+    static class AiInitTracker
+    {
+        public static readonly HashSet<BattleAIController> Initialized
+            = new HashSet<BattleAIController>();
+    }
+
+    [HarmonyPrefix]
+    public static bool Prefix(ref BattleAIController __instance)
+    {
+        if (!AiInitTracker.Initialized.Contains(__instance))
+        {
+            AiInitTracker.Initialized.Add(__instance);
+            return true;   // allow original AIRun ONCE
+        }
+        if (holyAction.IsDown())
+        {
+            __instance.SetActionParameter(__instance.OwnerObject, BattleSkillID.DIAS_NORMAL_ATTACK_01, true, false, BattleDefine.RootType.Invalid);
+            
+            __instance.rootBehavior.AIRun();
+            RyMCoopPlugin.StaticLog.LogInfo($"Holy3");
+        }
+        if (holyToggleFlag != false)
+        {
+            
+        }
+        return holyToggleFlag;
     }
 }
 
+
+//@@
 public class RyMCoopOverlay : MonoBehaviour
 {
     private bool showOverlay = true;
@@ -24,7 +73,6 @@ public class RyMCoopOverlay : MonoBehaviour
     private KeyboardShortcut debugKey = new KeyboardShortcut(KeyCode.F2);
     private KeyboardShortcut tiertiaryKey = new KeyboardShortcut(KeyCode.F3);
     private RyMOverlayEntry overlayEntry;
-
     public void Start()
     {
         overlayEntry = new RyMOverlayEntry(250, 25);
@@ -46,11 +94,15 @@ public class RyMCoopOverlay : MonoBehaviour
                 RyMCoopPlugin.StaticLog.LogInfo($"ControlPlayerIndex: {BattleManager.Instance.ControlPlayerIndex}");
                 RyMCoopPlugin.StaticLog.LogInfo($"IsEnabled: {BattleManager.Instance.enabled}");
                 RyMCoopPlugin.StaticLog.LogInfo($"PlayerCount: {BattleManager.Instance.battlePlayerList.Count}");
+                
                 if (BattleManager.Instance.battlePlayerList.Count > 0)
                 {
                     for (int i = 0; i < BattleManager.Instance.battlePlayerList.Count; i++)
                     {
-                        RyMCoopPlugin.StaticLog.LogInfo($"Player[{i}]");
+                        
+                        
+                        
+                        //RyMCoopPlugin.StaticLog.LogInfo($"Player[{i}], {BattleManager.Instance.battlePlayerList[i].battleAIController.aiMoveController.destination}, {BattleManager.Instance.battlePlayerList[i].battleAIController.aiMoveController.finalDestination}, {BattleManager.Instance.battlePlayerList[i].battleAIController.aiMoveController.finalDestination + new Vector3(1, 0, 1)}");
                         /* TRIED: 
                          * enableAIMove
                          * EnableAIFromSystem
@@ -132,28 +184,33 @@ public class RyMCoopOverlay : MonoBehaviour
         }
         if (tiertiaryKey.IsDown())
         {
-            if (PartyManager.Instance != null)
-            {
-                if (PartyManager.Instance.GetPartyMemberCount() < 7)
-                {
-                    PartyManager.instance.JoinMember(PlayerID.DIAS, false);
-                    PartyManager.instance.JoinMember(PlayerID.LEON, false);
-                    //PartyManager.instance.AddUpdatedMember(PlayerID.OPERA, true, true);
-                    //PartyManager.instance.BreakawayMember(PlayerID.OPERA);
-                    //BattleManager.instance.GetPlayer(PlayerID.CLAUDE).characterController = null;
-                    //RyMCoopPlugin.StaticLog.LogInfo($"Added Ashton to Party Members");
+            RyMCoopPlugin.StaticLog.LogInfo($"TiertiaryKeyPressed");
+            
+
+                    /*
+                    if (PartyManager.Instance != null)
+                    {
+                        if (PartyManager.Instance.GetPartyMemberCount() < 7)
+                        {
+                            PartyManager.instance.JoinMember(PlayerID.DIAS, false);
+                            PartyManager.instance.JoinMember(PlayerID.LEON, false);
+                            //PartyManager.instance.AddUpdatedMember(PlayerID.OPERA, true, true);
+                            //PartyManager.instance.BreakawayMember(PlayerID.OPERA);
+                            //BattleManager.instance.GetPlayer(PlayerID.CLAUDE).characterController = null;
+                            //RyMCoopPlugin.StaticLog.LogInfo($"Added Ashton to Party Members");
+                        }
+                        else
+                        {
+                            RyMCoopPlugin.StaticLog.LogInfo($"Cannot add more party members");
+                        }
+                    }
+                    else
+                    {
+                        RyMCoopPlugin.StaticLog.LogInfo($"No Party Instance");
+                    }
+                    */
                 }
-                else
-                {
-                    RyMCoopPlugin.StaticLog.LogInfo($"Cannot add more party members");
-                }
-            }
-            else
-            {
-                RyMCoopPlugin.StaticLog.LogInfo($"No Party Instance");
-            }
-        }
-        
+
         // Refresh controller reference
         if (Gamepad.all.Count > 0)
         {
