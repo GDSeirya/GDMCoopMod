@@ -1,11 +1,71 @@
-﻿using BepInEx.Unity.IL2CPP.Configuration;
+﻿using BepInEx.Logging;
+using BepInEx.Unity.IL2CPP.Configuration;
+using Common;
 using Game;
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using BepInEx.Logging;
-using HarmonyLib;
 
-[HarmonyPatch(typeof(BattleManager))]
+[HarmonyPatch(typeof(BattleCharacterController), nameof(BattleCharacterController.OnMove),
+              new[] { typeof(Vector3), typeof(float) })]
+/*class Log_OnMove
+{
+    static void Prefix(BattleCharacterController __instance, Vector3 moveDir, float moveRate)
+    {
+        RyMCoopPlugin.StaticLog.LogInfo($"[OnMove] {__instance.battleCharacter.CharacterID} Dir={moveDir} Rate={moveRate}");
+    }
+}
+[HarmonyPatch(typeof(BattleCharacterController), nameof(BattleCharacterController.OnNormalAttack))]
+class Log_OnNormalAttack
+{
+    static void Prefix(BattleCharacterController __instance, BattleCharacter target)
+    {
+        string tgt = target != null ? target.ToString() : "null";
+        RyMCoopPlugin.StaticLog.LogInfo($"[OnNormalAttack] {__instance.battleCharacter.CharacterID} Target={tgt}");
+    }
+}
+[HarmonyPatch(typeof(BattleCharacterController),
+     nameof(BattleCharacterController.OnBattleSkill),
+     new[] { typeof(BattleSkillID), typeof(BattleDefine.RootType) })]
+class Log_OnBattleSkill
+{
+    static void Prefix(BattleCharacterController __instance, BattleSkillID battleSkillID, BattleDefine.RootType root)
+    {
+        RyMCoopPlugin.StaticLog.LogInfo($"[OnBattleSkill] {__instance.battleCharacter.CharacterID} Skill={battleSkillID}");
+    }
+}
+[HarmonyPatch(typeof(BattleCharacterController),
+     nameof(BattleCharacterController.OnAction),
+     new[] { typeof(BattleAIActionParameter) })]
+class Log_OnActionParam
+{
+    static void Prefix(BattleCharacterController __instance, BattleAIActionParameter ap)
+    {
+        string target = ap?.Target != null ? ap.Target.ToString() : "null";
+        RyMCoopPlugin.StaticLog.LogInfo($"[OnActionParam] {__instance.battleCharacter.CharacterID} Skill={ap?.BattleSkillID} Target={target} Long={ap?.IsLong}");
+    }
+}
+[HarmonyPatch(typeof(BattleCharacterController), nameof(BattleCharacterController.ReserveAction))]
+class Log_ReserveAction
+{
+    static void Prefix(BattleCharacterController __instance, BattleSkillID battleSkillID, BattleCharacter target)
+    {
+        string tgt = target != null ? target.ToString() : "null";
+        RyMCoopPlugin.StaticLog.LogInfo($"[ReserveAction] {__instance.battleCharacter.CharacterID} Skill={battleSkillID} Target={tgt}");
+    }
+}
+
+[HarmonyPatch(typeof(InputComponent), "SetInputTask")]
+class Log_SetInputTask
+{
+    static void Prefix(TaskComponent component, InputTask inputTask)
+    {
+        if (component is InputComponent ic && ic.InputTask != inputTask)
+            RyMCoopPlugin.StaticLog.LogInfo($"[SetInputTask] Component={ic} NewTask={inputTask}");
+    }
+}*/
+
+/*[HarmonyPatch(typeof(BattleManager))]
 public class BattleManagerPatch
 {
     [HarmonyPatch("OnUpdate")]
@@ -14,7 +74,7 @@ public class BattleManagerPatch
     {
         RyMCoopPlugin.StaticLog.LogInfo("BattleManager Update!");
     }
-}
+}*/
 
 public class RyMCoopOverlay : MonoBehaviour
 {
@@ -30,6 +90,16 @@ public class RyMCoopOverlay : MonoBehaviour
         overlayEntry = new RyMOverlayEntry(250, 25);
         RyMOverlayManager.Register(overlayEntry);
     }
+    /*[HarmonyPrefix]
+    public static bool Prefix(BattleCharacter __instance)
+    {
+        if (Keyboard.current != null && Keyboard.current.f4Key.isPressed)
+        {
+            RyMCoopPlugin.StaticLog.LogInfo("BattleCharacter");
+            return false;
+        }
+        return true;
+    }*/
 
     public void Update()
     {
@@ -153,7 +223,7 @@ public class RyMCoopOverlay : MonoBehaviour
                 RyMCoopPlugin.StaticLog.LogInfo($"No Party Instance");
             }
         }
-        
+
         // Refresh controller reference
         if (Gamepad.all.Count > 0)
         {
@@ -312,5 +382,142 @@ public class RyMCoopOverlay : MonoBehaviour
             new Rect(x, y + 280, 250, 20),
             $"Right: {rightStick.x:F2}, {rightStick.y:F2}"
         );
+    }
+}
+[HarmonyPatch(typeof(BattleCharacter), "OnUpdate")]
+public static class Log0
+{
+    [HarmonyPrefix]
+    public static bool Prefix(BattleCharacter __instance)
+    {
+        if (Keyboard.current != null && Keyboard.current.f4Key.isPressed)
+        {
+            RyMCoopPlugin.StaticLog.LogInfo("BattleCharacter");
+            return false;
+        }
+        return true;
+    }
+}
+/*[HarmonyPatch(typeof(BattleCharacterController))]
+public static class BattleCharacterController1
+{
+    [HarmonyPrefix]
+    public static bool Prefix(BattleCharacterController __instance)
+    {
+            if (Keyboard.current.f5Key.wasPressedThisFrame)
+            {
+                BattleManager.controlPlayerIndex) = 4;
+            }
+
+            if (Keyboard.current.f6Key.wasPressedThisFrame)
+            {
+                battleManager.ControlPlayerIndex = 5;
+            }
+    }
+}*/
+
+[HarmonyPatch(typeof(Common.InputManager), "OnUpdate")]
+public static class Log1
+{
+    [HarmonyPrefix]
+    static bool Prefix()
+    {
+        if (Keyboard.current != null && Keyboard.current.f5Key.isPressed)
+        {
+            return false;
+        }
+        return true;
+    }
+    
+}
+
+[HarmonyPatch(typeof(Common.InputManager), "GetGamepad")]
+public static class Log2
+{
+    [HarmonyPrefix]
+    static bool Prefix(ref Gamepad __result)
+    {
+        if (Keyboard.current != null && Keyboard.current.f6Key.isPressed)
+        {
+            __result = null;
+            return false;
+        }
+        return true;
+    }
+
+}
+
+/*[HarmonyPatch(typeof(BattleManager), "controlPlayerIndex")]
+public static class Log3
+{
+    static bool Prefix(BattleManager __instance, int set_ControlPlayerIndex)
+    {
+
+        // Example: character 0 = controller 1, character 1 = controller 2
+        //__result = MyInputRouter.IsCharacterControlled(index);
+        if (Keyboard.current != null && Keyboard.current.f7Key.isPressed)
+        {
+            int value = set_ControlPlayerIndex;
+            RyMCoopPlugin.StaticLog.LogInfo("BM.controlPlayerIndex");
+            set_ControlPlayerIndex = value++;
+            return false; // skip original
+        }
+        return true;
+    }
+}*/
+
+[HarmonyPatch(typeof(BattleManager), "set_ControlPlayerIndex")]
+public static class Log3
+{
+    [HarmonyPrefix]
+    static void Prefix(ref int value)
+    {
+        RyMCoopPlugin.StaticLog.LogInfo($"SET ControlPlayerIndex = {value}");
+
+        if (Keyboard.current.f7Key.wasPressedThisFrame)
+        {
+            value++;
+            RyMCoopPlugin.StaticLog.LogInfo($"Changed to {value}");
+        }
+    }
+}
+
+/*[HarmonyPatch(typeof(BattleManager), "get_ControlPlayerIndex")]
+public static class Log3b
+{
+    static bool Prefix(BattleManager __instance, int get_ControlPlayerIndex)
+    {
+
+        // Example: character 0 = controller 1, character 1 = controller 2
+        //__result = MyInputRouter.IsCharacterControlled(index);
+            RyMCoopPlugin.StaticLog.LogInfo(get_ControlPlayerIndex);
+            return false; // skip original
+    }
+}*/
+
+[HarmonyPatch(typeof(BattleManager), "get_ControlPlayerIndex")]
+public static class Log3b
+{
+    [HarmonyPostfix]
+    static void Postfix(int __result)
+    {
+        RyMCoopPlugin.StaticLog.LogInfo($"GET ControlPlayerIndex = {__result}");
+    }
+}
+
+[HarmonyPatch(typeof(BattleManager), "SetControlPlayerTarget")]
+public static class Log4
+{
+    static bool Prefix(BattleManager __instance, BattleCharacter target, bool isCameraFocus)
+    {
+
+        // Example: character 0 = controller 1, character 1 = controller 2
+        //__result = MyInputRouter.IsCharacterControlled(index);
+        if (Keyboard.current != null && Keyboard.current.f8Key.isPressed)
+        {
+            RyMCoopPlugin.StaticLog.LogInfo(
+            $"SetControlPlayerTarget(target={target}, cameraFocus={isCameraFocus})");
+        }
+        return true;
     }
 }
