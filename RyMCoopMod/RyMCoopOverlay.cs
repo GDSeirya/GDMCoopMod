@@ -180,6 +180,36 @@ public static class BattleAIControllerPatch
                     //GET PLAYER ID so we know what character
                     PlayerID playerId = (PlayerID)__instance.OwnerObject.CharacterID;
 
+                    
+                    //get get left skill index
+                    int battleSkillComboIndex = __instance.OwnerObject.GetCharacterController().battleSkillLeftIndex;
+                    BattleSkillID skillId = (BattleSkillID)__instance.OwnerObject.GetCharacterController().GetNextBattleSkillID(BattleDefine.RootType.Left);
+                    
+                    if (skillId == BattleSkillID.INVALID && battleSkillComboIndex != 0)
+                    {
+                        __instance.OwnerObject.GetCharacterController().battleSkillLeftIndex = 0;
+                        skillId = (BattleSkillID)__instance.OwnerObject.GetCharacterController().GetNextBattleSkillID(BattleDefine.RootType.Left);
+                    }
+
+                    bool rangeFinder = BattleUtility.IsLongRange(__instance.OwnerObject, BattleManager.GetInstance().GetControlPlayerTarget());
+
+                    //if invalid, get default normal attack
+                    RyMCoopPlugin.StaticLog.LogInfo($"3Battler Index {__instance.OwnerObject.indexInParty}, SkillId {skillId}, IsLong {rangeFinder}, LeftSkillIndex {battleSkillComboIndex}");
+                    //if valid, do action
+
+                    if (skillId != BattleSkillID.INVALID)
+                    {
+                        __instance.SetActionParameter(BattleManager.GetInstance().GetControlPlayerTarget(), skillId, rangeFinder, false, BattleDefine.RootType.Invalid);
+                        __instance.rootBehavior.AIRun();
+                    }
+                }
+                /*
+                else if (testAttackButton2.IsDown())
+                {
+                    // INVALID=0, CLAUDE=1, RENA=2 CELINE=3, BOWMAN=4, DIAS=5, PRECIS=6, ASHTON=7, LEON=8, OPERA=9, ERNEST=10, NOEL=11, CHISATO=12, WELCH=13, MAX=14
+                    //GET PLAYER ID so we know what character
+                    PlayerID playerId = (PlayerID)__instance.OwnerObject.CharacterID;
+
                     //get get left skill index
                     BattleSkillID skillId = (BattleSkillID)__instance.OwnerObject.GetCharacterController().GetNextBattleSkillID(BattleDefine.RootType.Left);
 
@@ -194,7 +224,8 @@ public static class BattleAIControllerPatch
 
                     }
                 }
-                else if (testAttackButton2.IsDown())
+                */
+                else if (testAttackButton3.IsDown())
                 {
                     var controller = __instance.OwnerObject.GetCharacterController();
 
