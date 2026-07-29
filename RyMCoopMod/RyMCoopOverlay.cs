@@ -3,79 +3,363 @@ using BepInEx.Unity.IL2CPP.Configuration;
 using Common;
 using Game;
 using HarmonyLib;
+using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Playables;
+using static Common.InputManager;
 
-[HarmonyPatch(typeof(BattleCharacterController), nameof(BattleCharacterController.OnMove),
-              new[] { typeof(Vector3), typeof(float) })]
-/*class Log_OnMove
+[HarmonyPatch(typeof(BattleAIController), "AIRun")]
+public static class BattleAIControllerPatch
 {
-    static void Prefix(BattleCharacterController __instance, Vector3 moveDir, float moveRate)
+    private static KeyboardShortcut enablePlayerAi = new KeyboardShortcut(KeyCode.F5);
+    private static KeyboardShortcut disablePlayerAi = new KeyboardShortcut(KeyCode.F6);
+    private static KeyboardShortcut testAttackButton1 = new KeyboardShortcut(KeyCode.F7);
+    private static KeyboardShortcut testAttackButton2 = new KeyboardShortcut(KeyCode.F8);
+    private static KeyboardShortcut testAttackButton3 = new KeyboardShortcut(KeyCode.F9);
+    private static bool isPlayerAiEnabled = false;
+
+    [HarmonyPrefix]
+    public static void Update()
     {
-        RyMCoopPlugin.StaticLog.LogInfo($"[OnMove] {__instance.battleCharacter.CharacterID} Dir={moveDir} Rate={moveRate}");
+        if (enablePlayerAi.IsDown())
+        {
+            isPlayerAiEnabled = true;
+            RyMCoopPlugin.StaticLog.LogInfo($"Enable Player AI {isPlayerAiEnabled.ToString()}");
+        }
+        if (disablePlayerAi.IsDown())
+        {
+            isPlayerAiEnabled = false;
+            RyMCoopPlugin.StaticLog.LogInfo($"Disable Player AI {isPlayerAiEnabled.ToString()}");
+        }
     }
-}
-[HarmonyPatch(typeof(BattleCharacterController), nameof(BattleCharacterController.OnNormalAttack))]
-class Log_OnNormalAttack
-{
-    static void Prefix(BattleCharacterController __instance, BattleCharacter target)
+
+    static class AiInitTracker
     {
-        string tgt = target != null ? target.ToString() : "null";
-        RyMCoopPlugin.StaticLog.LogInfo($"[OnNormalAttack] {__instance.battleCharacter.CharacterID} Target={tgt}");
+        public static readonly HashSet<BattleAIController> Initialized
+            = new HashSet<BattleAIController>();
     }
-}
-[HarmonyPatch(typeof(BattleCharacterController),
-     nameof(BattleCharacterController.OnBattleSkill),
-     new[] { typeof(BattleSkillID), typeof(BattleDefine.RootType) })]
-class Log_OnBattleSkill
-{
-    static void Prefix(BattleCharacterController __instance, BattleSkillID battleSkillID, BattleDefine.RootType root)
+
+    [HarmonyPrefix]
+    public static bool Prefix(ref BattleAIController __instance)
     {
-        RyMCoopPlugin.StaticLog.LogInfo($"[OnBattleSkill] {__instance.battleCharacter.CharacterID} Skill={battleSkillID}");
-    }
-}
-[HarmonyPatch(typeof(BattleCharacterController),
-     nameof(BattleCharacterController.OnAction),
-     new[] { typeof(BattleAIActionParameter) })]
-class Log_OnActionParam
-{
-    static void Prefix(BattleCharacterController __instance, BattleAIActionParameter ap)
-    {
-        string target = ap?.Target != null ? ap.Target.ToString() : "null";
-        RyMCoopPlugin.StaticLog.LogInfo($"[OnActionParam] {__instance.battleCharacter.CharacterID} Skill={ap?.BattleSkillID} Target={target} Long={ap?.IsLong}");
-    }
-}
-[HarmonyPatch(typeof(BattleCharacterController), nameof(BattleCharacterController.ReserveAction))]
-class Log_ReserveAction
-{
-    static void Prefix(BattleCharacterController __instance, BattleSkillID battleSkillID, BattleCharacter target)
-    {
-        string tgt = target != null ? target.ToString() : "null";
-        RyMCoopPlugin.StaticLog.LogInfo($"[ReserveAction] {__instance.battleCharacter.CharacterID} Skill={battleSkillID} Target={tgt}");
+        if (!isPlayerAiEnabled)
+        {
+            //Check if Player Battler
+            if (__instance.OwnerObject.GetBattleCharacterType() == BattleCharacterType.Player)
+            {
+                if (!AiInitTracker.Initialized.Contains(__instance))
+                {
+                    AiInitTracker.Initialized.Add(__instance);
+                    return true; // allow original AIRun ONCE
+                }
+                if (__instance.OwnerObject.indexInParty == BattleManager.GetInstance().ControlPlayerIndex)
+                {
+                    return true; //If Player 1, run as usual
+                }
+                // If test attack button is pressed, run it
+                if (testAttackButton1.IsDown())
+                {
+                    // INVALID=0, CLAUDE=1, RENA=2 CELINE=3, BOWMAN=4, DIAS=5, PRECIS=6, ASHTON=7, LEON=8, OPERA=9, ERNEST=10, NOEL=11, CHISATO=12, WELCH=13, MAX=14
+                    //GET PLAYER ID so we know what character
+                    PlayerID playerId = (PlayerID)__instance.OwnerObject.CharacterID;
+
+                    //get skill in reserve
+                    //BattleSkillID reservedSkillId = __instance.OwnerObject.GetCharacterController().reserveBattleSkillID;
+                    //get next normal attack skill
+                    BattleSkillID skillId = __instance.OwnerObject.GetCharacterController().GetNextNormalAttackSkillID();
+
+                    //if invalid, get default normal attack
+                    if (skillId == BattleSkillID.INVALID)
+                    {
+                        switch (playerId)
+                        {
+                            case PlayerID.CLAUDE:
+                                skillId = BattleSkillID.CLAUDE_NORMAL_ATTACK_01; //has combo
+                                break;
+                            case PlayerID.RENA:
+                                skillId = BattleSkillID.RENA_NORMAL_ATTACK_01;
+                                break;
+                            case PlayerID.CELINE:
+                                skillId = BattleSkillID.CELINE_NORMAL_ATTACK_01;
+                                break;
+                            case PlayerID.BOWMAN:
+                                skillId = BattleSkillID.BOWMAN_NORMAL_ATTACK_01; //has combo
+                                break;
+                            case PlayerID.DIAS:
+                                skillId = BattleSkillID.DIAS_NORMAL_ATTACK_01; //has combo
+                                break;
+                            case PlayerID.PRECIS:
+                                skillId = BattleSkillID.PRECIS_NORMAL_ATTACK_01; //has combo
+                                break;
+                            case PlayerID.ASHTON:
+                                skillId = BattleSkillID.ASHTON_NORMAL_ATTACK_01; //has combo
+                                break;
+                            case PlayerID.LEON:
+                                skillId = BattleSkillID.LEON_NORMAL_ATTACK_01;
+                                break;
+                            case PlayerID.OPERA:
+                                skillId = BattleSkillID.OPERA_NORMAL_ATTACK_01; //has combo
+                                break;
+                            case PlayerID.ERNEST:
+                                skillId = BattleSkillID.ERNEST_NORMAL_ATTACK_01; //has combo
+                                break;
+                            case PlayerID.NOEL:
+                                skillId = BattleSkillID.NOEL_NORMAL_ATTACK_01;
+                                break;
+                            case PlayerID.CHISATO:
+                                skillId = BattleSkillID.CHISATO_NORMAL_ATTACK_01; //has combo
+                                break;
+                            case PlayerID.WELCH:
+                                skillId = BattleSkillID.WELCH_NORMAL_ATTACK_01; //has combo
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    //if valid, do action
+                    if (skillId != BattleSkillID.INVALID)
+                    {
+                        __instance.SetActionParameter(BattleManager.GetInstance().GetControlPlayerTarget(), skillId, false, false, BattleDefine.RootType.Invalid);
+                        __instance.rootBehavior.AIRun();
+                        RyMCoopPlugin.StaticLog.LogInfo($"2Battler Index {__instance.OwnerObject.indexInParty}, SkillId {skillId}");
+
+                    }
+
+
+                    //__instance.SetActionParameter(BattleManager.GetInstance().GetControlPlayer().BattleAIController.Target, BattleSkillID.DIAS_NORMAL_ATTACK_01, true, false, BattleDefine.RootType.Invalid);
+                    //BattleSkillID skillID = __instance.OwnerObject.GetCharacterController().re;                
+                    //BattleSkillID skillID = BattleSkillID.DIAS_NORMAL_ATTACK_01;
+                    //BattleSkillID skillID = __instance.OwnerObject.GetCharacterController().normalAtta ;
+                    //BattleSkillID skillID = __instance.OwnerObject.GetCharacterController().GetNextNormalAttackSkillID();
+                    /*
+                    if (skillID != BattleSkillID.INVALID)
+                    {
+                        RyMCoopPlugin.StaticLog.LogInfo($"Attack with id {skillID}");
+                        __instance.SetActionParameter(BattleManager.GetInstance().GetControlPlayer().BattleAIController.Target, skillID, true, false, BattleDefine.RootType.Invalid);
+                        __instance.rootBehavior.AIRun();
+                    }
+                    */
+                    //BattleCharacterController
+                    //BELOW DOES NOTHING
+                    //__instance.SetActionParameter(BattleManager.GetInstance().GetControlPlayer().BattleAIController.Target, __instance.OwnerObject.GetCharacterController().GetNextNormalAttackSkillID(), __instance.OwnerObject.GetCharacterController().reserveIsLong, false, __instance.OwnerObject.GetCharacterController().BattleSkillRootType);
+
+                }
+                else if (testAttackButton2.IsDown())
+                {
+                    // INVALID=0, CLAUDE=1, RENA=2 CELINE=3, BOWMAN=4, DIAS=5, PRECIS=6, ASHTON=7, LEON=8, OPERA=9, ERNEST=10, NOEL=11, CHISATO=12, WELCH=13, MAX=14
+                    //GET PLAYER ID so we know what character
+                    PlayerID playerId = (PlayerID)__instance.OwnerObject.CharacterID;
+
+                    //get get left skill index
+                    BattleSkillID skillId = (BattleSkillID)__instance.OwnerObject.GetCharacterController().GetNextBattleSkillID(BattleDefine.RootType.Left);
+
+                    //if invalid, get default normal attack
+                    RyMCoopPlugin.StaticLog.LogInfo($"3Battler Index {__instance.OwnerObject.indexInParty}, SkillId {skillId}");
+                    //if valid, do action
+                    if (skillId != BattleSkillID.INVALID)
+                    {
+                        __instance.SetActionParameter(BattleManager.GetInstance().GetControlPlayerTarget(), skillId, false, false, BattleDefine.RootType.Invalid);
+                        __instance.rootBehavior.AIRun();
+
+
+                    }
+                }
+                else if (testAttackButton2.IsDown())
+                {
+                    var controller = __instance.OwnerObject.GetCharacterController();
+
+                    BattleSkillID id =
+                    controller.GetNextNormalAttackSkillID();
+
+                    controller.ReserveAction(
+                        id,
+                        BattleManager.GetInstance().GetControlPlayerTarget()
+                    );
+                    controller.ReserveAction(id, BattleManager.GetInstance().GetControlPlayerTarget());
+
+                    __instance.SetActionParameter(
+                        BattleManager.GetInstance().GetControlPlayerTarget(),
+                        id,
+                        false,
+                        false,
+                        BattleDefine.RootType.Invalid);
+
+                    __instance.rootBehavior.AIRun();
+
+                }
+                return false;
+            }
+        }
+        //Don't modify anything, run AI controller as usual
+        return true;
     }
 }
 
-[HarmonyPatch(typeof(InputComponent), "SetInputTask")]
-class Log_SetInputTask
+/*
+[HarmonyPatch(typeof(BattleAIController), "AIRun")]
+public static class BattleAIControllerPatch
 {
-    static void Prefix(TaskComponent component, InputTask inputTask)
-    {
-        if (component is InputComponent ic && ic.InputTask != inputTask)
-            RyMCoopPlugin.StaticLog.LogInfo($"[SetInputTask] Component={ic} NewTask={inputTask}");
-    }
-}*/
+    private static KeyboardShortcut holyOn = new KeyboardShortcut(KeyCode.F5);
+    private static KeyboardShortcut holyOff = new KeyboardShortcut(KeyCode.F6);
+    private static KeyboardShortcut holyAction = new KeyboardShortcut(KeyCode.F7);
+    private static KeyboardShortcut unholyAction = new KeyboardShortcut(KeyCode.F8);
+    private static bool holyToggleFlag = false;
+    private static bool isInit = false;
+    private static int healthAmount;
 
-/*[HarmonyPatch(typeof(BattleManager))]
-public class BattleManagerPatch
+    public static int HealthAmount { get => healthAmount; set => healthAmount = value; }
+
+    [HarmonyPrefix]
+    public static void Update()
+    {
+        if (holyOn.IsDown())
+        {
+            holyToggleFlag = true;
+            RyMCoopPlugin.StaticLog.LogInfo($"Toggled Holy1 {holyToggleFlag.ToString()}");
+        }
+        if (holyOff.IsDown())
+        {
+            holyToggleFlag = false;
+            RyMCoopPlugin.StaticLog.LogInfo($"Toggled Holy2 {holyToggleFlag.ToString()}");
+        }
+    }
+
+    static class AiInitTracker
+    {
+        public static readonly HashSet<BattleAIController> Initialized
+            = new HashSet<BattleAIController>();
+    }
+
+    
+
+    [HarmonyPrefix]
+    public static bool Prefix(ref BattleAIController __instance)
+    {
+        if (__instance.OwnerObject.GetBattleCharacterType() == BattleCharacterType.Player)
+        {
+            if (!AiInitTracker.Initialized.Contains(__instance))
+            {
+                AiInitTracker.Initialized.Add(__instance);
+                return true; // allow original AIRun ONCE
+            }
+            if (holyAction.IsDown())
+            {
+                __instance.SetActionParameter(BattleManager.GetInstance().GetPlayer().target, BattleSkillID.DIAS_NORMAL_ATTACK_01, false, false, __instance.actionParameter.RootType);
+                __instance.rootBehavior.AIRun();
+                RyMCoopPlugin.StaticLog.LogInfo($"Holy3");
+            }
+            if (unholyAction.IsDown())
+            {
+                //GameInputManager.instance.;
+                //var a = new BattleObject();
+                var a = new BattleCharacterController();
+                RyMCoopPlugin.StaticLog.LogInfo($"Player{__instance.OwnerObject.indexInParty}: Wow!");
+                
+                
+            }
+            return holyToggleFlag;
+        }
+        else return true;
+        
+    }
+}
+*/
+
+
+/*
+[HarmonyPatch(typeof(BattleManager), nameof(BattleManager.GetControlPlayer))]
+public static class BattleManagerPatcher
 {
-    [HarmonyPatch("OnUpdate")]
-    [HarmonyPostfix]
-    public static void Postfix()
+    
+    private static int counter = 0;
+    public static bool Prefix(ref BattleManager __instance, ref BattleCharacter __result)
     {
-        RyMCoopPlugin.StaticLog.LogInfo("BattleManager Update!");
+        RyMCoopPlugin.StaticLog.LogInfo($"Counter: {counter.ToString()}");
+        int playerCount = 0;
+        for (int i = 0; i < BattleManager.Instance.battlePlayerList.Count; i++)
+        {
+            if (BattleManager.Instance.battlePlayerList[i].GetBattleCharacterType() == BattleCharacterType.Player)
+            {
+                playerCount++;
+            }
+        }
+        if (counter > playerCount) counter = 0;
+        for (int i = 0; i < BattleManager.Instance.battlePlayerList.Count; i++)
+        {
+            if (BattleManager.Instance.battlePlayerList[i].GetBattleCharacterType() == BattleCharacterType.Player)
+            {
+                if (BattleManager.Instance.battlePlayerList[i].indexInParty == counter)
+                {
+                    __result = BattleManager.Instance.battlePlayerList[i];
+                    counter++;
+                    return false;
+                }
+            }
+            
+        }
+        return true;
     }
-}*/
+}
 
+[HarmonyPatch(typeof(BattleCharacterController), "Run")]
+public static class BattleCharacterControllerPatch
+{
+    private static KeyboardShortcut holyOn = new KeyboardShortcut(KeyCode.F5);
+    private static KeyboardShortcut holyOff = new KeyboardShortcut(KeyCode.F6);
+    private static KeyboardShortcut holyAction = new KeyboardShortcut(KeyCode.F7);
+    private static KeyboardShortcut unholyAction = new KeyboardShortcut(KeyCode.F8);
+    private static bool holyToggleFlag = true;
+    private static int healthAmount;
+
+    public static int HealthAmount { get => healthAmount; set => healthAmount = value; }
+
+    [HarmonyPrefix]
+    public static void Update()
+    {
+        if (holyOn.IsDown())
+        {
+            holyToggleFlag = true;
+            RyMCoopPlugin.StaticLog.LogInfo($"Toggled Holy1 {holyToggleFlag.ToString()}");
+        }
+        if (holyOff.IsDown())
+        {
+            holyToggleFlag = false;
+            RyMCoopPlugin.StaticLog.LogInfo($"Toggled Holy2 {holyToggleFlag.ToString()}");
+        }
+    }
+
+    [HarmonyPrefix]
+    public static bool Prefix(ref BattleCharacterController __instance)
+    {
+        if (__instance.battleCharacter.GetBattleCharacterType() == BattleCharacterType.Player)
+        {
+            if (__instance.battleCharacter.indexInParty != BattleManager.GetInstance().ControlPlayerIndex)
+            {
+                //BattleManager.GetInstance().GetControlPlayer();
+            }
+            if (holyAction.IsDown())
+            {
+                holyToggleFlag = true;
+                RyMCoopPlugin.StaticLog.LogInfo($"Player{__instance.battleCharacter.indexInParty}: SkillID:{__instance.GetNextNormalAttackSkillID()}");
+            }
+
+            if (__instance.battleCharacter.indexInParty != BattleManager.GetInstance().ControlPlayerIndex)
+            {
+                return holyToggleFlag;
+            }
+            else
+            {
+                return true;
+            }
+        }
+        return true;
+    }
+}
+*/
+//@@
 public class RyMCoopOverlay : MonoBehaviour
 {
     private bool showOverlay = true;
@@ -84,22 +368,11 @@ public class RyMCoopOverlay : MonoBehaviour
     private KeyboardShortcut debugKey = new KeyboardShortcut(KeyCode.F2);
     private KeyboardShortcut tiertiaryKey = new KeyboardShortcut(KeyCode.F3);
     private RyMOverlayEntry overlayEntry;
-
     public void Start()
     {
         overlayEntry = new RyMOverlayEntry(250, 25);
         RyMOverlayManager.Register(overlayEntry);
     }
-    /*[HarmonyPrefix]
-    public static bool Prefix(BattleCharacter __instance)
-    {
-        if (Keyboard.current != null && Keyboard.current.f4Key.isPressed)
-        {
-            RyMCoopPlugin.StaticLog.LogInfo("BattleCharacter");
-            return false;
-        }
-        return true;
-    }*/
 
     public void Update()
     {
@@ -116,11 +389,15 @@ public class RyMCoopOverlay : MonoBehaviour
                 RyMCoopPlugin.StaticLog.LogInfo($"ControlPlayerIndex: {BattleManager.Instance.ControlPlayerIndex}");
                 RyMCoopPlugin.StaticLog.LogInfo($"IsEnabled: {BattleManager.Instance.enabled}");
                 RyMCoopPlugin.StaticLog.LogInfo($"PlayerCount: {BattleManager.Instance.battlePlayerList.Count}");
+
                 if (BattleManager.Instance.battlePlayerList.Count > 0)
                 {
                     for (int i = 0; i < BattleManager.Instance.battlePlayerList.Count; i++)
                     {
-                        RyMCoopPlugin.StaticLog.LogInfo($"Player[{i}]");
+
+                        //BattleManager.Instance.battlePlayerList[0].CharacterID
+
+                        //RyMCoopPlugin.StaticLog.LogInfo($"Player[{i}], {BattleManager.Instance.battlePlayerList[i].battleAIController.aiMoveController.destination}, {BattleManager.Instance.battlePlayerList[i].battleAIController.aiMoveController.finalDestination}, {BattleManager.Instance.battlePlayerList[i].battleAIController.aiMoveController.finalDestination + new Vector3(1, 0, 1)}");
                         /* TRIED: 
                          * enableAIMove
                          * EnableAIFromSystem
@@ -202,6 +479,10 @@ public class RyMCoopOverlay : MonoBehaviour
         }
         if (tiertiaryKey.IsDown())
         {
+            RyMCoopPlugin.StaticLog.LogInfo($"TiertiaryKeyPressed");
+
+
+            /*
             if (PartyManager.Instance != null)
             {
                 if (PartyManager.Instance.GetPartyMemberCount() < 7)
@@ -222,6 +503,7 @@ public class RyMCoopOverlay : MonoBehaviour
             {
                 RyMCoopPlugin.StaticLog.LogInfo($"No Party Instance");
             }
+            */
         }
 
         // Refresh controller reference
@@ -382,142 +664,5 @@ public class RyMCoopOverlay : MonoBehaviour
             new Rect(x, y + 280, 250, 20),
             $"Right: {rightStick.x:F2}, {rightStick.y:F2}"
         );
-    }
-}
-[HarmonyPatch(typeof(BattleCharacter), "OnUpdate")]
-public static class Log0
-{
-    [HarmonyPrefix]
-    public static bool Prefix(BattleCharacter __instance)
-    {
-        if (Keyboard.current != null && Keyboard.current.f4Key.isPressed)
-        {
-            RyMCoopPlugin.StaticLog.LogInfo("BattleCharacter");
-            return false;
-        }
-        return true;
-    }
-}
-/*[HarmonyPatch(typeof(BattleCharacterController))]
-public static class BattleCharacterController1
-{
-    [HarmonyPrefix]
-    public static bool Prefix(BattleCharacterController __instance)
-    {
-            if (Keyboard.current.f5Key.wasPressedThisFrame)
-            {
-                BattleManager.controlPlayerIndex) = 4;
-            }
-
-            if (Keyboard.current.f6Key.wasPressedThisFrame)
-            {
-                battleManager.ControlPlayerIndex = 5;
-            }
-    }
-}*/
-
-[HarmonyPatch(typeof(Common.InputManager), "OnUpdate")]
-public static class Log1
-{
-    [HarmonyPrefix]
-    static bool Prefix()
-    {
-        if (Keyboard.current != null && Keyboard.current.f5Key.isPressed)
-        {
-            return false;
-        }
-        return true;
-    }
-    
-}
-
-[HarmonyPatch(typeof(Common.InputManager), "GetGamepad")]
-public static class Log2
-{
-    [HarmonyPrefix]
-    static bool Prefix(ref Gamepad __result)
-    {
-        if (Keyboard.current != null && Keyboard.current.f6Key.isPressed)
-        {
-            __result = null;
-            return false;
-        }
-        return true;
-    }
-
-}
-
-/*[HarmonyPatch(typeof(BattleManager), "controlPlayerIndex")]
-public static class Log3
-{
-    static bool Prefix(BattleManager __instance, int set_ControlPlayerIndex)
-    {
-
-        // Example: character 0 = controller 1, character 1 = controller 2
-        //__result = MyInputRouter.IsCharacterControlled(index);
-        if (Keyboard.current != null && Keyboard.current.f7Key.isPressed)
-        {
-            int value = set_ControlPlayerIndex;
-            RyMCoopPlugin.StaticLog.LogInfo("BM.controlPlayerIndex");
-            set_ControlPlayerIndex = value++;
-            return false; // skip original
-        }
-        return true;
-    }
-}*/
-
-[HarmonyPatch(typeof(BattleManager), "set_ControlPlayerIndex")]
-public static class Log3
-{
-    [HarmonyPrefix]
-    static void Prefix(ref int value)
-    {
-        RyMCoopPlugin.StaticLog.LogInfo($"SET ControlPlayerIndex = {value}");
-
-        if (Keyboard.current.f7Key.wasPressedThisFrame)
-        {
-            value++;
-            RyMCoopPlugin.StaticLog.LogInfo($"Changed to {value}");
-        }
-    }
-}
-
-/*[HarmonyPatch(typeof(BattleManager), "get_ControlPlayerIndex")]
-public static class Log3b
-{
-    static bool Prefix(BattleManager __instance, int get_ControlPlayerIndex)
-    {
-
-        // Example: character 0 = controller 1, character 1 = controller 2
-        //__result = MyInputRouter.IsCharacterControlled(index);
-            RyMCoopPlugin.StaticLog.LogInfo(get_ControlPlayerIndex);
-            return false; // skip original
-    }
-}*/
-
-[HarmonyPatch(typeof(BattleManager), "get_ControlPlayerIndex")]
-public static class Log3b
-{
-    [HarmonyPostfix]
-    static void Postfix(int __result)
-    {
-        RyMCoopPlugin.StaticLog.LogInfo($"GET ControlPlayerIndex = {__result}");
-    }
-}
-
-[HarmonyPatch(typeof(BattleManager), "SetControlPlayerTarget")]
-public static class Log4
-{
-    static bool Prefix(BattleManager __instance, BattleCharacter target, bool isCameraFocus)
-    {
-
-        // Example: character 0 = controller 1, character 1 = controller 2
-        //__result = MyInputRouter.IsCharacterControlled(index);
-        if (Keyboard.current != null && Keyboard.current.f8Key.isPressed)
-        {
-            RyMCoopPlugin.StaticLog.LogInfo(
-            $"SetControlPlayerTarget(target={target}, cameraFocus={isCameraFocus})");
-        }
-        return true;
     }
 }
