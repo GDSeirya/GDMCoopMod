@@ -19,7 +19,11 @@ public static class BattleAIControllerPatch
     private static KeyboardShortcut testAttackButton1 = new KeyboardShortcut(KeyCode.F7);
     private static KeyboardShortcut testAttackButton2 = new KeyboardShortcut(KeyCode.F8);
     private static KeyboardShortcut testAttackButton3 = new KeyboardShortcut(KeyCode.F9);
+    
+    private static KeyboardShortcut testMoveLeftButton1 = new KeyboardShortcut(KeyCode.F10);
+    private static KeyboardShortcut testMoveLeftButton2 = new KeyboardShortcut(KeyCode.F12);
     private static bool isPlayerAiEnabled = false;
+    private static bool isFakeMoving = false;
 
     [HarmonyPrefix]
     public static void Update()
@@ -58,6 +62,29 @@ public static class BattleAIControllerPatch
                 if (__instance.OwnerObject.indexInParty == BattleManager.GetInstance().ControlPlayerIndex)
                 {
                     return true; //If Player 1, run as usual
+                }
+                // Simple movement test
+                if (testMoveLeftButton1.IsDown())
+                {
+                    isFakeMoving = true;
+                }
+                if (testMoveLeftButton2.IsDown())
+                {
+                    isFakeMoving = false;
+                }
+
+                if (isFakeMoving)
+                {
+                    BattleCharacterController controller = __instance.OwnerObject.GetCharacterController();
+
+                    if (controller != null)
+                    {
+                        // World-space left
+                        controller.OnMove(Vector3.left, 1.0f);
+                        //controller.OnMove(new Vector3(2f, 0, 2f), 1.0f);
+                    }
+
+                    return false;
                 }
                 // If test attack button is pressed, run it
                 if (testAttackButton1.IsDown())
