@@ -22,7 +22,8 @@ public class RyMCoopPlugin : BasePlugin
         harmony.PatchAll();
 
         AddComponent<RyMCoopCredits>();
-        AddComponent<RyMCoopOverlay>();
+        //AddComponent<RyMCoopOverlay>();
+        AddComponent<RyMDebugOverlay>();
         AddComponent<RyMCoopUpdateDriver>();
 
         RyMControllerRouting.AssignController(1, 1);
