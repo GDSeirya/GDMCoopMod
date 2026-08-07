@@ -3,7 +3,7 @@
     public static class RyMControllerRouting
     {
         // Default: controller N controls character N
-        private static int[] routing = new int[4] { 0, -1, -1, -1 };
+        private static int[] routing = new int[4] { -1, -1, -1, -1 };
 
         /// <summary>
         /// Assign a controller to a party index.

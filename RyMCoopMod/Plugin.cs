@@ -26,6 +26,8 @@ public class RyMCoopPlugin : BasePlugin
         AddComponent<RyMDebugOverlay>();
         AddComponent<RyMCoopUpdateDriver>();
 
+        //playerIndex, controllerIndex
+        RyMControllerRouting.AssignController(0, 0);
         RyMControllerRouting.AssignController(1, 1);
 
         
