@@ -174,30 +174,34 @@ public static class BattleAIControllerPatch
                         //Deadzone of move stick, assumed to be 0.1f to give leeway for drifty sticks
                         if (magnitude >= 0.1f)
                         {
-                            //Get the normalization of the move vector so that you can't walk as it's not a function in the base game
-                            Vector2 normalized = moveVector.normalized;
-                            //If there is a battle skill, reset it
-                            if (__instance.OwnerObject.BattleAIController.actionParameter.BattleSkillID != BattleSkillID.INVALID)
+                            //Check if AI Controller exists
+                            if (__instance.rootBehavior != null)
                             {
-                                __instance.OwnerObject.BattleAIController.actionParameter.BattleSkillID = BattleSkillID.INVALID;
+                                //Get the normalization of the move vector so that you can't walk as it's not a function in the base game
+                                Vector2 normalized = moveVector.normalized;
+                                //If there is a battle skill, reset it
+                                if (__instance.OwnerObject.BattleAIController.actionParameter.BattleSkillID != BattleSkillID.INVALID)
+                                {
+                                    __instance.OwnerObject.BattleAIController.actionParameter.BattleSkillID = BattleSkillID.INVALID;
+                                }
+                                //If action behavior, reset it to maintain control over the AI character
+                                if (GetDeepestBehavior(__instance.rootBehavior).ToString() == "Game.BattleAIActionBehavior")
+                                {
+                                    RemoveAllChildBehaviors(__instance.rootBehavior);
+                                    GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIPlayerBehavior();
+                                    GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
+                                    GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAINullBehavior();
+                                    GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
+                                }
+                                //Stop Blue Effects
+                                __instance.OwnerObject.StopPersistence();
+                                //Reset Godspeed Speedboost Effect
+                                __instance.OwnerObject.ResetBattleCharacterFlag();
+                                //Stop further movement for AI if they are allowed to and allow player to move instead
+                                if (__instance.enableAIMove) __instance.enableAIMove = false;
+                                //Actually move the character
+                                battleCharController.OnMove(new Vector3(normalized.x, 0, normalized.y), __instance.aiMoveController.moveSpeedRate);
                             }
-                            //If action behavior, reset it to maintain control over the AI character
-                            if (GetDeepestBehavior(__instance.rootBehavior).ToString() == "Game.BattleAIActionBehavior")
-                            {
-                                RemoveAllChildBehaviors(__instance.rootBehavior);
-                                GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIPlayerBehavior();
-                                GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
-                                GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAINullBehavior();
-                                GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
-                            }
-                            //Stop Blue Effects
-                            __instance.OwnerObject.StopPersistence();
-                            //Reset Godspeed Speedboost Effect
-                            __instance.OwnerObject.ResetBattleCharacterFlag();
-                            //Stop further movement for AI if they are allowed to and allow player to move instead
-                            if (__instance.enableAIMove) __instance.enableAIMove = false;
-                            //Actually move the character
-                            battleCharController.OnMove(new Vector3(normalized.x, 0, normalized.y), __instance.aiMoveController.moveSpeedRate);
                         }
                         
                         //Attack Logic
@@ -220,7 +224,8 @@ public static class BattleAIControllerPatch
                                 }
 
                                 //Perform an attack request on target
-                                BattleCharacterActionResult actionResult = __instance.OwnerObject.GetCharacterController().OnNormalAttack(BattleManager.GetInstance().GetControlPlayerTarget());
+                                //BattleCharacterActionResult actionResult;
+                                __instance.OwnerObject.GetCharacterController().OnNormalAttack(BattleManager.GetInstance().GetControlPlayerTarget());
 
                                 //Store original Tactics ID
                                 TacticsID originalId = __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID;
@@ -243,93 +248,140 @@ public static class BattleAIControllerPatch
                         //Evade logic
                         if (RyMCoopPlugin.VirtualControllers.GetState(controllerIndex).EvadePressed)
                         {
-                            RyMCoopPlugin.StaticLog.LogInfo($"{controllerIndex}: EVADE pressed");
-
-                            if (GetDeepestBehavior(__instance.rootBehavior).ToString() == "Game.BattleAIActionBehavior")
+                            if (__instance.rootBehavior != null)
                             {
-                                RemoveAllChildBehaviors(__instance.rootBehavior);
-                                GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIPlayerBehavior();
-                                GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
-                                GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAINullBehavior();
-                                GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
-                            }
-                            __instance.OwnerObject.StopPersistence();
-                            __instance.OwnerObject.ResetBattleCharacterFlag();
-                            __instance.OwnerObject.GetCharacterController().UpdateState();
-                            if (__instance.enableAIMove) __instance.enableAIMove = false;
-                            TacticsID originalId = __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID;
-                            __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID = TacticsID.INVALID;
-                            
-                            __instance.rootBehavior.AIRun();
-                            __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID = originalId;
-                            battleCharController.OnStepAvoid();
-                            
+                                if (GetDeepestBehavior(__instance.rootBehavior).ToString() == "Game.BattleAIActionBehavior")
+                                {
+                                    RemoveAllChildBehaviors(__instance.rootBehavior);
+                                    GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIPlayerBehavior();
+                                    GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
+                                    GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAINullBehavior();
+                                    GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
+                                }
+                                if (__instance.enableAIMove) __instance.enableAIMove = false;
+                                __instance.OwnerObject.StopPersistence();
+                                __instance.OwnerObject.ResetBattleCharacterFlag();
+                                __instance.OwnerObject.GetCharacterController().UpdateState();
 
-                            /*
-                            var bp = (BattlePlayer)__instance.OwnerObject;
-                            var bcc = (BattleCharacterController)bp.characterController;
-                            bcc.OnNormalAttack();
-                            */
-                            //return true;
+                                TacticsID originalId = __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID;
+                                __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID = TacticsID.INVALID;
+                                __instance.rootBehavior.AIRun();
+                                __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID = originalId;
+                                battleCharController.OnStepAvoid();
+                            }
                         }
 
                         //Left Skill Logic
                         if (RyMCoopPlugin.VirtualControllers.GetState(controllerIndex).LeftSkillPressed)
                         {
-                            //get get left skill index
-                            if (battleCharController.battleSkillLeftIndex > 1)
-                                battleCharController.battleSkillLeftIndex = 0;
-                            //store left skill index
-                            int battleSkillComboIndex = battleCharController.battleSkillLeftIndex;
-                            //get left skill id
-                            BattleSkillID skillId = (BattleSkillID)battleCharController.GetNextBattleSkillID(BattleDefine.RootType.Left);
-
-                            //get range type of current target
-                            bool rangeFinder = BattleUtility.IsLongRange(__instance.OwnerObject, BattleManager.GetInstance().GetControlPlayerTarget());
-
-                            //if skill isn't invalid, perform skill
-                            if (skillId != BattleSkillID.INVALID)
+                            if (GetDeepestBehavior(__instance.rootBehavior).ToString() == "Game.BattleAINullBehavior")
                             {
-                                //send skill battle character controller
-                                battleCharController.OnBattleSkill(skillId, BattleManager.GetInstance().GetControlPlayerTarget(), BattleDefine.RootType.Left);
-                                //execute battle character skill
-                                __instance.rootBehavior.AIRun();
-                                return true;
+                                RemoveAllChildBehaviors(__instance.rootBehavior);
+                                GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIPlayerBehavior();
+                                GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
+                                /*
+                                GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIPlayerThinkBehavior();
+                                GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
+                                */
+                                GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIActionBehavior();
+                                GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
                             }
+                            //Reset if not actual combo
+                            if (__instance.OwnerObject.GetCharacterController().BattleSkillRootType != BattleDefine.RootType.Left)
+                            {
+                                __instance.OwnerObject.GetCharacterController().battleSkillRightIndex = 0;
+                                __instance.OwnerObject.GetCharacterController().normalAttackIndex = 0;
+                                __instance.OwnerObject.GetCharacterController().Reset();
+                            }
+
+                            //Store original Tactics ID
+                            TacticsID originalId = __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID;
+
+                            //Set current Tactics to Invalid to prevent AI from doing anything
+                            __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID = TacticsID.INVALID;
+
+                            //Allow AI to move character
+                            if (!__instance.enableAIMove) __instance.enableAIMove = true;
+
+                            //Perform an attack request on target
+                            //BattleCharacterActionResult actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill()
+                            BattleSkillID skillId = __instance.OwnerObject.GetCharacterController().GetNextBattleSkillID(BattleDefine.RootType.Left);
+                            BattleCharacterActionResult actionResult = BattleCharacterActionResult.Invalid;
+                            if (skillId != BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().reserveBattleSkillID == BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().battleSkillLeftIndex < 2)
+                            {
+                                actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, BattleDefine.RootType.Left);
+                                //Run AI so they actually do what they're asked to do
+                                __instance.rootBehavior.AIRun();
+                            }
+                            RyMCoopPlugin.StaticLog.LogInfo($"{controllerIndex}-Left: skillIndex {__instance.OwnerObject.GetCharacterController().battleSkillLeftIndex}, SkillId {skillId}, aResult {actionResult}, canUseSkill {__instance.OwnerObject.CanUseBattleSkill(skillId)}");
+
+                            
+                            
+
+                            //Return original tactics to AI to prevent strategy menu from being bad
+                            __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID = originalId;
                         }
 
                         //Right Skill Logic
                         if (RyMCoopPlugin.VirtualControllers.GetState(controllerIndex).RightSkillPressed)
                         {
-                            RyMCoopPlugin.StaticLog.LogInfo($"{controllerIndex} RIGHT SKILL PRESSEd");
-                            //get get left skill index
-                            if (battleCharController.battleSkillRightIndex > 1)
-                                battleCharController.battleSkillRightIndex = 0;
-                            //store left skill index
-                            int battleSkillComboIndex = battleCharController.battleSkillRightIndex;
-                            //get left skill id
-                            BattleSkillID skillId = (BattleSkillID)battleCharController.GetNextBattleSkillID(BattleDefine.RootType.Right);
-
-                            //get range type of current target
-                            bool rangeFinder = BattleUtility.IsLongRange(__instance.OwnerObject, BattleManager.GetInstance().GetControlPlayerTarget());
-
-                            //if skill isn't invalid, perform skill
-                            if (skillId != BattleSkillID.INVALID)
+                            if (GetDeepestBehavior(__instance.rootBehavior).ToString() == "Game.BattleAINullBehavior")
                             {
-                                //send skill battle character controller
-                                battleCharController.OnBattleSkill(skillId, BattleManager.GetInstance().GetControlPlayerTarget(), BattleDefine.RootType.Right);
-                                //execute battle character skill
-                                __instance.rootBehavior.AIRun();
-                                return true;
+                                RemoveAllChildBehaviors(__instance.rootBehavior);
+                                GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIPlayerBehavior();
+                                GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
+                                /*
+                                GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIPlayerThinkBehavior();
+                                GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
+                                */
+                                GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIActionBehavior();
+                                GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
                             }
+                            //Reset if not actual combo
+                            if (__instance.OwnerObject.GetCharacterController().BattleSkillRootType != BattleDefine.RootType.Right)
+                            {
+                                __instance.OwnerObject.GetCharacterController().battleSkillLeftIndex = 0;
+                                __instance.OwnerObject.GetCharacterController().normalAttackIndex = 0;
+                                __instance.OwnerObject.GetCharacterController().Reset();
+                            }
+
+                            //Store original Tactics ID
+                            TacticsID originalId = __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID;
+
+                            //Set current Tactics to Invalid to prevent AI from doing anything
+                            __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID = TacticsID.INVALID;
+
+                            //Allow AI to move character
+                            if (!__instance.enableAIMove) __instance.enableAIMove = true;
+
+                            //Perform an attack request on target
+                            //BattleCharacterActionResult actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill()
+                            BattleCharacterActionResult actionResult = BattleCharacterActionResult.Invalid;
+                            
+                            BattleSkillID skillId = __instance.OwnerObject.GetCharacterController().GetNextBattleSkillID(BattleDefine.RootType.Right);
+                            if (skillId != BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().reserveBattleSkillID == BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().battleSkillRightIndex < 2)
+                            {
+                                actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, BattleDefine.RootType.Right);
+                            }
+                            RyMCoopPlugin.StaticLog.LogInfo($"{controllerIndex}-Right: skillIndex {__instance.OwnerObject.GetCharacterController().battleSkillRightIndex}, SkillId {skillId}, aResult {actionResult}, canUseSkill {__instance.OwnerObject.CanUseBattleSkill(skillId)}");
+
+                            //Run AI so they actually do what they're asked to do
+                            __instance.rootBehavior.AIRun();
+
+                            //Return original tactics to AI to prevent strategy menu from being bad
+                            __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID = originalId;
+                        }
+
+                        //If stepping, set state to false so that you don't move forward automatically
+                        if (__instance.OwnerObject.GetCharacterController().currentState == 9 && __instance.enableAIMove)
+                        {
+                            __instance.enableAIMove = false;
                         }
 
                         //return true if battling
                         if (__instance.OwnerObject.BattleAIController.actionParameter.BattleSkillID != BattleSkillID.INVALID ||
-                            __instance.OwnerObject.GetCharacterController().currentState == 8 || //BattleCharacterState.Step is 8
-                            __instance.OwnerObject.GetCharacterController().currentState == 9) //BattleCharacterState.StepAvoid is 9
+                            __instance.OwnerObject.GetCharacterController().currentState == 8) //BattleCharacterState.Step is 8
                         {
-                            
                             return true;
                         }
                     }
