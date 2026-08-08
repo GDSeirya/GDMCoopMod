@@ -2,9 +2,9 @@
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
+using Il2CppSystem.Reflection;
+using Microsoft.VisualBasic;
 using RyMCoopMod;
-using UnityEngine;
-using UnityEngine.InputSystem;
 
 [BepInPlugin("rym.coopmod", "RyM Coop Plugin", "1.0")]
 public class RyMCoopPlugin : BasePlugin
@@ -32,7 +32,7 @@ public class RyMCoopPlugin : BasePlugin
 
         
 
-        StaticLog.LogInfo("RyM Plugin loaded");
+        StaticLog.LogInfo($"RyM Plugin loaded");
         
     }
 }

@@ -33,7 +33,7 @@ public class RyMCoopCredits : MonoBehaviour
 
         GUI.Box(
             rect,
-            "RyM Coop Mod Loaded!"
+            "RyMCoop Mod Loaded"
         );
 
         GUI.Label(
@@ -43,7 +43,7 @@ public class RyMCoopCredits : MonoBehaviour
                 280,
                 20
             ),
-            "By: Ryuria & Mithras"
+            "By: GD Seirya & Mithras Seirya"
         );
     }
 }

@@ -1,44 +1,23 @@
-﻿using BepInEx.Unity.IL2CPP.Configuration;
-using Game;
+﻿using Game;
 using HarmonyLib;
 using System.Collections.Generic;
-using UnityEngine;
-using static Common.InputManager;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
 
 [HarmonyPatch(typeof(BattleAIController), "AIRun")]
 public static class BattleAIControllerPatch
 {
-    private static KeyboardShortcut enablePlayerAi = new KeyboardShortcut(KeyCode.F5);
-    private static KeyboardShortcut disablePlayerAi = new KeyboardShortcut(KeyCode.F6);
     private static bool isPartyAiEnabled = false;
 
-    [HarmonyPrefix]
-    public static void Update()
+    static private class AiInitTracker
     {
-        if (enablePlayerAi.IsDown())
-        {
-            isPartyAiEnabled = true;
-            RyMCoopPlugin.StaticLog.LogInfo($"Enabled Party AI {isPartyAiEnabled.ToString()}");
-        }
-        if (disablePlayerAi.IsDown())
-        {
-            isPartyAiEnabled = false;
-            RyMCoopPlugin.StaticLog.LogInfo($"Disabled Party AI {isPartyAiEnabled.ToString()}");
-        }
-    }
-
-    static class AiInitTracker
-    {
-        public static readonly HashSet<BattleAIController> Initialized
-            = new HashSet<BattleAIController>();
+        public static readonly HashSet<BattleAIController> Initialized = new HashSet<BattleAIController>();
     }
 
     /// <summary>
     /// Returns all the child behaviors chained from AIBehavior as string.
     /// </summary>
-    public static string DumpBehaviorChain(AIBehavior<BattleCharacter> behavior, int depth = 0)
+    private static string DumpBehaviorChain(AIBehavior<BattleCharacter> behavior, int depth = 0)
     {
         if (behavior == null)
             return "(null)\n";
@@ -58,7 +37,7 @@ public static class BattleAIControllerPatch
     /// <summary>
     /// Returns AI behavior by name string, eg "Game.BattleAIActionBehavior" will return BattleAIActionBehavior behavior.
     /// </summary>
-    public static AIBehavior<BattleCharacter> GetAIBehavior(AIBehavior<BattleCharacter> behavior, string behaviorName)
+    private static AIBehavior<BattleCharacter> GetAIBehavior(AIBehavior<BattleCharacter> behavior, string behaviorName)
     {
         AIBehavior<BattleCharacter> current = behavior;
         if (current.ToString() == behaviorName) return current;
@@ -73,7 +52,7 @@ public static class BattleAIControllerPatch
     /// <summary>
     /// Returns the lowest AI behavior. The game runs the lowest level behavior first.
     /// </summary>
-    public static AIBehavior<BattleCharacter> GetDeepestBehavior(AIBehavior<BattleCharacter> behavior)
+    private static AIBehavior<BattleCharacter> GetDeepestBehavior(AIBehavior<BattleCharacter> behavior)
     {
         AIBehavior<BattleCharacter> current = behavior;
 
@@ -86,7 +65,7 @@ public static class BattleAIControllerPatch
     /// <summary>
     /// Removes all child behaviors from an AIBehavior.
     /// </summary>
-    public static void RemoveAllChildBehaviors(AIBehavior<BattleCharacter> root)
+    private static void RemoveAllChildBehaviors(AIBehavior<BattleCharacter> root)
     {
         AIBehavior<BattleCharacter> current = root;
 
@@ -95,6 +74,23 @@ public static class BattleAIControllerPatch
             // Remove the next child
             current.childBehavior = null;
         }
+    }
+
+    /// <summary>
+    /// Clears a list of hashes of detected BattleCharacters, will initialize battle ai controller again when AI is disabled.
+    /// </summary>
+    public static void ClearInit()
+    {
+        AiInitTracker.Initialized.Clear();
+    }
+
+    /// <summary>
+    /// Set other player AI to either be enabled or disabled. Disabled means it may be controlled by another human.
+    /// </summary>
+    public static void SetOtherPlayerAI(bool setTo)
+    {
+        isPartyAiEnabled = setTo;
+        ClearInit();
     }
 
     [HarmonyPrefix]
@@ -109,25 +105,17 @@ public static class BattleAIControllerPatch
                 //Initialize Behaviors, overriding original
                 if (!AiInitTracker.Initialized.Contains(__instance))
                 {
+                    RemoveAllChildBehaviors(__instance.rootBehavior);
                     //Required for actions to be had
                     GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIPlayerBehavior();
                     GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
-
-                    //Think behavior lets AI get more behaviors
-                    //GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIPlayerThinkBehavior();
-                    //GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
-
-                    //Action behavior lets AI act
-                    //GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIActionBehavior();
-                    //GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
-
                     //Battle Null Behavior is set to player 1 at the start, this is to replicate what it does
                     GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAINullBehavior();
                     GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
 
                     //Add to tracker so they don't re-initialize
                     AiInitTracker.Initialized.Add(__instance);
-                    
+
                     //Don't allow the original init to run
                     return false;
                 }
@@ -172,7 +160,7 @@ public static class BattleAIControllerPatch
                         //Get the magnitude of the move stick
                         float magnitude = moveVector.magnitude;
                         //Deadzone of move stick, assumed to be 0.1f to give leeway for drifty sticks
-                        if (magnitude >= 0.1f)
+                        if (__instance.OwnerObject.BattleAIController.actionParameter.BattleSkillID == BattleSkillID.INVALID && magnitude >= 0.1f)
                         {
                             //Check if AI Controller exists
                             if (__instance.rootBehavior != null)
@@ -203,7 +191,7 @@ public static class BattleAIControllerPatch
                                 battleCharController.OnMove(new Vector3(normalized.x, 0, normalized.y), __instance.aiMoveController.moveSpeedRate);
                             }
                         }
-                        
+
                         //Attack Logic
                         if (RyMCoopPlugin.VirtualControllers.GetState(controllerIndex).AttackPressed)
                         {
@@ -215,10 +203,6 @@ public static class BattleAIControllerPatch
                                     RemoveAllChildBehaviors(__instance.rootBehavior);
                                     GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIPlayerBehavior();
                                     GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
-                                    /*
-                                    GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIPlayerThinkBehavior();
-                                    GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
-                                    */
                                     GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIActionBehavior();
                                     GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
                                 }
@@ -241,7 +225,7 @@ public static class BattleAIControllerPatch
 
                                 //Return original tactics to AI to prevent strategy menu from being bad
                                 __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID = originalId;
-                                
+
                             }
                         }
 
@@ -279,10 +263,6 @@ public static class BattleAIControllerPatch
                                 RemoveAllChildBehaviors(__instance.rootBehavior);
                                 GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIPlayerBehavior();
                                 GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
-                                /*
-                                GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIPlayerThinkBehavior();
-                                GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
-                                */
                                 GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIActionBehavior();
                                 GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
                             }
@@ -307,17 +287,11 @@ public static class BattleAIControllerPatch
                             //BattleCharacterActionResult actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill()
                             BattleSkillID skillId = __instance.OwnerObject.GetCharacterController().GetNextBattleSkillID(BattleDefine.RootType.Left);
                             BattleCharacterActionResult actionResult = BattleCharacterActionResult.Invalid;
-                            if (skillId != BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().reserveBattleSkillID == BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().battleSkillLeftIndex < 2)
+                            if (skillId != BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().reserveBattleSkillID == BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().battleSkillLeftIndex < 2 && !__instance.OwnerObject.GetCharacterController().IsLinkComboAction())
                             {
                                 actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, BattleDefine.RootType.Left);
-                                //Run AI so they actually do what they're asked to do
-                                __instance.rootBehavior.AIRun();
+
                             }
-                            RyMCoopPlugin.StaticLog.LogInfo($"{controllerIndex}-Left: skillIndex {__instance.OwnerObject.GetCharacterController().battleSkillLeftIndex}, SkillId {skillId}, aResult {actionResult}, canUseSkill {__instance.OwnerObject.CanUseBattleSkill(skillId)}");
-
-                            
-                            
-
                             //Return original tactics to AI to prevent strategy menu from being bad
                             __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID = originalId;
                         }
@@ -330,55 +304,35 @@ public static class BattleAIControllerPatch
                                 RemoveAllChildBehaviors(__instance.rootBehavior);
                                 GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIPlayerBehavior();
                                 GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
-                                /*
-                                GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIPlayerThinkBehavior();
-                                GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
-                                */
                                 GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIActionBehavior();
                                 GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
                             }
-                            //Reset if not actual combo
                             if (__instance.OwnerObject.GetCharacterController().BattleSkillRootType != BattleDefine.RootType.Right)
                             {
                                 __instance.OwnerObject.GetCharacterController().battleSkillLeftIndex = 0;
                                 __instance.OwnerObject.GetCharacterController().normalAttackIndex = 0;
                                 __instance.OwnerObject.GetCharacterController().Reset();
                             }
-
-                            //Store original Tactics ID
                             TacticsID originalId = __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID;
-
-                            //Set current Tactics to Invalid to prevent AI from doing anything
                             __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID = TacticsID.INVALID;
-
-                            //Allow AI to move character
                             if (!__instance.enableAIMove) __instance.enableAIMove = true;
-
-                            //Perform an attack request on target
-                            //BattleCharacterActionResult actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill()
                             BattleCharacterActionResult actionResult = BattleCharacterActionResult.Invalid;
-                            
+
                             BattleSkillID skillId = __instance.OwnerObject.GetCharacterController().GetNextBattleSkillID(BattleDefine.RootType.Right);
-                            if (skillId != BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().reserveBattleSkillID == BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().battleSkillRightIndex < 2)
+                            if (skillId != BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().reserveBattleSkillID == BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().battleSkillRightIndex < 2 && !__instance.OwnerObject.GetCharacterController().IsLinkComboAction())
                             {
                                 actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, BattleDefine.RootType.Right);
                             }
-                            RyMCoopPlugin.StaticLog.LogInfo($"{controllerIndex}-Right: skillIndex {__instance.OwnerObject.GetCharacterController().battleSkillRightIndex}, SkillId {skillId}, aResult {actionResult}, canUseSkill {__instance.OwnerObject.CanUseBattleSkill(skillId)}");
-
-                            //Run AI so they actually do what they're asked to do
-                            __instance.rootBehavior.AIRun();
-
-                            //Return original tactics to AI to prevent strategy menu from being bad
                             __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID = originalId;
                         }
 
-                        //If stepping, set state to false so that you don't move forward automatically
-                        if (__instance.OwnerObject.GetCharacterController().currentState == 9 && __instance.enableAIMove)
+                        //If stepping, set state to false so that you don't move forward automatically and AI can move
+                        if (__instance.enableAIMove == true && __instance.OwnerObject.GetCharacterController().currentState == 9 && __instance.enableAIMove)
                         {
                             __instance.enableAIMove = false;
                         }
 
-                        //return true if battling
+                        //Return true if battling
                         if (__instance.OwnerObject.BattleAIController.actionParameter.BattleSkillID != BattleSkillID.INVALID ||
                             __instance.OwnerObject.GetCharacterController().currentState == 8) //BattleCharacterState.Step is 8
                         {
@@ -389,12 +343,24 @@ public static class BattleAIControllerPatch
                 }
                 else
                 {
-                    //business as usual if no controller is returned
+                    //Business as usual if no controller is returned
                     return true;
                 }
             }
         }
-        //Don't modify anything, run AI controller as usual
+        else
+        {
+            if (__instance.OwnerObject.GetBattleCharacterType() == BattleCharacterType.Player)
+            {
+                //Initialize Behaviors, overriding original
+                if (!AiInitTracker.Initialized.Contains(__instance))
+                {
+                    RemoveAllChildBehaviors(__instance.rootBehavior);
+                    AiInitTracker.Initialized.Add(__instance);
+                }
+            }
+        }
+        //Don't modify anything, run AI controller as usual because AI is enabled
         return true;
     }
 }
