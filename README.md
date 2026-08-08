@@ -58,10 +58,10 @@ To assign a controller to a character:
 
 | Key | Function |
 |---|---|
-| **F1** | Assign selected controller to Character 1 |
+| **F1** | Assign selected controller to Character 1 / Select Controller 1 |
 | **F2** | Assign selected controller to Character 2 / Select Controller 2 |
-| **F3** | Assign selected controller to Character 3 |
-| **F4** | Assign selected controller to Character 4 |
+| **F3** | Assign selected controller to Character 3 / Select Controller 3 |
+| **F4** | Assign selected controller to Character 4 / Select Controller 4 |
 | **F5** | Unassign the selected controller |
 | **F6** | Unassign all controllers |
 | **F7** | Display controller/assignment information |
