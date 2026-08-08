@@ -1,4 +1,4 @@
-# RyM Coop Mod
+# GDM Coop Mod
 
 A cooperative multiplayer mod for **Star Ocean: The Second Story R**, built using **BepInEx** and **Unity IL2CPP modding tools**.
 
