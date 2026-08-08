@@ -4,6 +4,9 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
+    <Copyright>GD Seirya &amp; Mithras Seirya</Copyright>
+    <Description>A cooperative multiplayer mod for Star Ocean: The Second Story R, built using BepInEx and Unity IL2CPP modding tools.</Description>
+    <PackageReleaseNotes>Initial release of the mod.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
