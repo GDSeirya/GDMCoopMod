@@ -45,6 +45,54 @@ STAR OCEAN THE SECOND STORY R/
 
 BepInEx should load the plugin automatically.
 
+## Controller & Character Assignment
+
+The mod provides keyboard shortcuts for assigning controllers to party characters.
+
+### Controller Assignment
+
+To assign a controller to a character:
+
+1. Press **F1–F4** to select the character you want to assign.
+2. The selected controller will be assigned to that character.
+
+| Key | Function |
+|---|---|
+| **F1** | Assign selected controller to Character 1 |
+| **F2** | Assign selected controller to Character 2 / Select Controller 2 |
+| **F3** | Assign selected controller to Character 3 |
+| **F4** | Assign selected controller to Character 4 |
+| **F5** | Unassign the selected controller |
+| **F6** | Unassign all controllers |
+| **F7** | Display controller/assignment information |
+
+> **Note:** Pressing **F2** selects Controller 2. Once a controller is selected, pressing **F1–F4** assigns it to the corresponding character.
+
+### AI Control
+
+The following keys control whether the game's AI is enabled for the characters:
+
+| Key | Function |
+|---|---|
+| **F9** | Enable AI |
+| **F10** | Disable AI |
+
+### Example
+
+To assign **Controller 2** to **Character 3**:
+
+1. Press **F2** to select Controller 2.
+2. Press **F3** to assign Controller 2 to Character 3.
+
+To remove Controller 2 from its assigned character:
+
+1. Press **F2** to select Controller 2.
+2. Press **F5** to unassign it.
+
+To reset all controller assignments:
+
+- Press **F6**.
+
 ## Building From Source
 
 Clone the repository:
