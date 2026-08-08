@@ -2,37 +2,32 @@
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
-using Il2CppSystem.Reflection;
-using Microsoft.VisualBasic;
-using RyMCoopMod;
+using GDMCoopMod;
 
-[BepInPlugin("rym.coopmod", "RyM Coop Plugin", "1.0")]
-public class RyMCoopPlugin : BasePlugin
+[BepInPlugin("gdm.coopmod", "GDM Coop Plugin", "1.0")]
+public class GDMCoopPlugin : BasePlugin
 {
-    public static ManualLogSource StaticLog;   // your own writable field
-    public static RyMVirtualControllerManager VirtualControllers;
+    public static ManualLogSource StaticLog;
+    public static GDMVirtualControllerManager VirtualControllers;
 
     public override void Load()
     {
         StaticLog = Log;
 
-        VirtualControllers = new RyMVirtualControllerManager();
+        VirtualControllers = new GDMVirtualControllerManager();
 
-        Harmony harmony = new Harmony("com.gd.rymcoop");
+        Harmony harmony = new Harmony("com.gd.gdmcoop");
         harmony.PatchAll();
 
-        AddComponent<RyMCoopCredits>();
-        //AddComponent<RyMCoopOverlay>();
-        AddComponent<RyMDebugOverlay>();
-        AddComponent<RyMCoopUpdateDriver>();
+        AddComponent<GDMCoopCredits>();
+        AddComponent<GDMMainOverlay>();
+        AddComponent<GDMCoopUpdateDriver>();
 
         //playerIndex, controllerIndex
-        RyMControllerRouting.AssignController(0, 0);
-        RyMControllerRouting.AssignController(1, 1);
+        GDMControllerRouting.AssignController(0, 0);
+        GDMControllerRouting.AssignController(1, 1);
 
-        
-
-        StaticLog.LogInfo($"RyM Plugin loaded");
+        StaticLog.LogInfo($"GDM Coop Plugin loaded");
         
     }
 }

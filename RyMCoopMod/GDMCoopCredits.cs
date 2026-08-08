@@ -1,15 +1,15 @@
 ﻿using UnityEngine;
 
-public class RyMCoopCredits : MonoBehaviour
+public class GDMCoopCredits : MonoBehaviour
 {
     private float elapsedTime = 0f;
     private float displayTime = 15f;
-    private RyMOverlayEntry overlayEntry;
+    private GDMOverlayEntry overlayEntry;
 
     public void Start()
     {
-        overlayEntry = new RyMOverlayEntry(300, 60);
-        RyMOverlayManager.Register(overlayEntry);
+        overlayEntry = new GDMOverlayEntry(300, 60);
+        GDMOverlayManager.Register(overlayEntry);
     }
 
     public void Update()
@@ -19,7 +19,7 @@ public class RyMCoopCredits : MonoBehaviour
 
     public void OnDestroy()
     {
-        RyMOverlayManager.Unregister(overlayEntry);
+        GDMOverlayManager.Unregister(overlayEntry);
     }
 
     public void OnGUI()
@@ -29,11 +29,11 @@ public class RyMCoopCredits : MonoBehaviour
             Destroy(this);
             return;
         }
-        Rect rect = RyMOverlayManager.GetRect(overlayEntry);
+        Rect rect = GDMOverlayManager.GetRect(overlayEntry);
 
         GUI.Box(
             rect,
-            "RyMCoop Mod Loaded"
+            "GDMCoop Mod Loaded"
         );
 
         GUI.Label(
@@ -43,7 +43,7 @@ public class RyMCoopCredits : MonoBehaviour
                 280,
                 20
             ),
-            "By: GD Seirya & Mithras Seirya"
+            "Developed by GD Seirya & Mithras Seirya"
         );
     }
 }

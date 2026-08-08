@@ -1,6 +1,6 @@
-﻿namespace RyMCoopMod
+﻿namespace GDMCoopMod
 {
-    public static class RyMControllerRouting
+    public static class GDMControllerRouting
     {
         // Default: controller N controls character N
         private static int[] routing = new int[4] { -1, -1, -1, -1 };

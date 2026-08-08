@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 
-namespace RyMCoopMod
+namespace GDMCoopMod
 {
-    public class RyMVirtualControllerState
+    public class GDMVirtualControllerState
     {
         // Movement (analog)
         public Vector2 Move;

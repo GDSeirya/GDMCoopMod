@@ -6,19 +6,10 @@ The goal of this project is to add cooperative gameplay features to Star Ocean 2
 
 ## Features
 
-🚧 **Work in Progress**
-
 Current features:
 - BepInEx plugin framework setup
-- In-game debug overlay
 - Runtime testing tools
-
-Planned features:
 - Multiplayer/cooperative player control
-- Additional player character control
-- Synchronization of player actions
-- Cooperative battle support
-- Shared game state handling
 
 ## Requirements
 
@@ -40,14 +31,14 @@ Planned features:
 ### Development Build
 
 1. Install BepInEx IL2CPP into your Star Ocean 2 R installation.
-2. Download or build the latest RyM Coop Mod DLL.
+2. Download or build the latest GDM Coop Mod DLL.
 3. Copy the plugin DLL into:
 
 ```
 Star Ocean The Second Story R/
 └── BepInEx/
     └── plugins/
-        └── RyMCoopMod.dll
+        └── GDMCoopMod.dll
 ```
 
 4. Launch the game.
@@ -59,7 +50,7 @@ BepInEx should load the plugin automatically.
 Clone the repository:
 
 ```bash
-git clone https://github.com/<username>/RyMCoopMod.git
+git clone https://github.com/<username>/GDMCoopMod.git
 ```
 
 Open the solution in Visual Studio.
@@ -76,7 +67,7 @@ The compiled DLL will be located in:
 bin/
 └── Debug/
     └── net8.0/
-        └── RyMCoopMod.dll
+        └── GDMCoopMod.dll
 ```
 
 Copy the DLL into the BepInEx plugins folder to test.

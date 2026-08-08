@@ -8,19 +8,19 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.Rendering;
-using RyMCoopMod;
+using GDMCoopMod;
 
-public class RyMDebugOverlay : MonoBehaviour
+public class GDMMainOverlay : MonoBehaviour
 {
     private bool showOverlay = true;
     private KeyboardShortcut toggleKey = new KeyboardShortcut(KeyCode.F1);
     private KeyboardShortcut enableAi = new KeyboardShortcut(KeyCode.F5);
     private KeyboardShortcut disableAi = new KeyboardShortcut(KeyCode.F6);
-    private RyMOverlayEntry overlayEntry;
+    private GDMOverlayEntry overlayEntry;
     public void Start()
     {
-        overlayEntry = new RyMOverlayEntry(250, 25);
-        RyMOverlayManager.Register(overlayEntry);
+        overlayEntry = new GDMOverlayEntry(250, 25);
+        GDMOverlayManager.Register(overlayEntry);
     }
 
     public void Update()
@@ -32,13 +32,13 @@ public class RyMDebugOverlay : MonoBehaviour
         if (enableAi.IsDown())
         {
             BattleAIControllerPatch.SetOtherPlayerAI(true);
-            RyMCoopPlugin.StaticLog.LogInfo("Party AI Enabled");
+            GDMCoopPlugin.StaticLog.LogInfo("Party AI Enabled");
         }
 
         if (disableAi.IsDown())
         {
             BattleAIControllerPatch.SetOtherPlayerAI(false);
-            RyMCoopPlugin.StaticLog.LogInfo("Party AI Disabled");
+            GDMCoopPlugin.StaticLog.LogInfo("Party AI Disabled");
         }
     }
 
@@ -46,7 +46,7 @@ public class RyMDebugOverlay : MonoBehaviour
     {
         if (overlayEntry != null)
         {
-            RyMOverlayManager.Unregister(overlayEntry);
+            GDMOverlayManager.Unregister(overlayEntry);
         }
     }
 
@@ -56,7 +56,7 @@ public class RyMDebugOverlay : MonoBehaviour
         const int lineHeight = 20;
         const int numberOfRows = 25;
         if (!showOverlay) return;
-        Rect overlayRect = RyMOverlayManager.GetRect(overlayEntry);
+        Rect overlayRect = GDMOverlayManager.GetRect(overlayEntry);
         GUI.Box(
             overlayRect,
             "Battle Instance Debug"
@@ -69,8 +69,8 @@ public class RyMDebugOverlay : MonoBehaviour
                 {
                     for (int i = 0; i < BattleManager.GetInstance().BattlePlayerList.Count; i++)
                     {
-                        int controllerIndex = RyMControllerRouting.GetControllerForParty(i);
-                        Vector2 virtualMoveVector = RyMCoopPlugin.VirtualControllers.GetState(controllerIndex).Move;
+                        int controllerIndex = GDMControllerRouting.GetControllerForParty(i);
+                        Vector2 virtualMoveVector = GDMCoopPlugin.VirtualControllers.GetState(controllerIndex).Move;
 
                         BattlePlayer battlePlayer = BattleManager.GetInstance().BattlePlayerList[i]; //good
                         BattleCharacterAttackNotifyTask attackNotifyTask = null;

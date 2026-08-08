@@ -1,12 +1,11 @@
-﻿using SimpleSpritePacker;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 
 //This file is so that on every update, the virtual controllers are updated!
 
-namespace RyMCoopMod
+namespace GDMCoopMod
 {
-    public class RyMCoopUpdateDriver : MonoBehaviour
+    public class GDMCoopUpdateDriver : MonoBehaviour
     {
         void Update()
         {
@@ -17,7 +16,7 @@ namespace RyMCoopMod
         {
             for (int partyIndex = 0; partyIndex < 4; partyIndex++)
             {
-                var state = RyMCoopPlugin.VirtualControllers.GetState(partyIndex);
+                var state = GDMCoopPlugin.VirtualControllers.GetState(partyIndex);
 
                 // If there are NOT enough controllers, return zero movement and false buttons
                 if (partyIndex >= Gamepad.all.Count)
@@ -32,7 +31,7 @@ namespace RyMCoopMod
                     // Update press/release events
                     state.UpdateEvents();
 
-                    RyMCoopPlugin.VirtualControllers.SetState(partyIndex, state);
+                    GDMCoopPlugin.VirtualControllers.SetState(partyIndex, state);
                     continue;
                 }
 
@@ -51,7 +50,7 @@ namespace RyMCoopMod
                 // Compute press/release events
                 state.UpdateEvents();
 
-                RyMCoopPlugin.VirtualControllers.SetState(partyIndex, state);
+                GDMCoopPlugin.VirtualControllers.SetState(partyIndex, state);
             }
         }
     }

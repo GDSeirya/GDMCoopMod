@@ -1,21 +1,21 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public static class RyMOverlayManager
+public static class GDMOverlayManager
 {
-    private static List<RyMOverlayEntry> overlays = new();
+    private static List<GDMOverlayEntry> overlays = new();
 
-    public static void Register(RyMOverlayEntry overlay)
+    public static void Register(GDMOverlayEntry overlay)
     {
         overlays.Add(overlay);
     }
 
-    public static void Unregister(RyMOverlayEntry overlay)
+    public static void Unregister(GDMOverlayEntry overlay)
     {
         overlays.Remove(overlay);
     }
 
-    public static Rect GetRect(RyMOverlayEntry target)
+    public static Rect GetRect(GDMOverlayEntry target)
     {
         float y = 10;
 
@@ -36,12 +36,12 @@ public static class RyMOverlayManager
     }
 }
 
-public class RyMOverlayEntry
+public class GDMOverlayEntry
 {
     public float Width;
     public float Height;
 
-    public RyMOverlayEntry(float width, float height)
+    public GDMOverlayEntry(float width, float height)
     {
         Width = width;
         Height = height;

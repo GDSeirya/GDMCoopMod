@@ -126,7 +126,7 @@ public static class BattleAIControllerPatch
                     return true;
                 }
                 //get controller based on partyIndex assigned earlier
-                int controllerIndex = RyMCoopMod.RyMControllerRouting.GetControllerForParty(__instance.OwnerObject.indexInParty);
+                int controllerIndex = GDMCoopMod.GDMControllerRouting.GetControllerForParty(__instance.OwnerObject.indexInParty);
 
                 //if valid controler indexes
                 if (controllerIndex >= 0 && controllerIndex < 4)
@@ -156,7 +156,7 @@ public static class BattleAIControllerPatch
                     if (battleCharController != null)
                     {
                         //Move Logic
-                        Vector2 moveVector = RyMCoopPlugin.VirtualControllers.GetState(controllerIndex).Move;
+                        Vector2 moveVector = GDMCoopPlugin.VirtualControllers.GetState(controllerIndex).Move;
                         //Get the magnitude of the move stick
                         float magnitude = moveVector.magnitude;
                         //Deadzone of move stick, assumed to be 0.1f to give leeway for drifty sticks
@@ -193,7 +193,7 @@ public static class BattleAIControllerPatch
                         }
 
                         //Attack Logic
-                        if (RyMCoopPlugin.VirtualControllers.GetState(controllerIndex).AttackPressed)
+                        if (GDMCoopPlugin.VirtualControllers.GetState(controllerIndex).AttackPressed)
                         {
                             //If AIController exists, proceed to overriding to attack
                             if (__instance.rootBehavior != null)
@@ -230,7 +230,7 @@ public static class BattleAIControllerPatch
                         }
 
                         //Evade logic
-                        if (RyMCoopPlugin.VirtualControllers.GetState(controllerIndex).EvadePressed)
+                        if (GDMCoopPlugin.VirtualControllers.GetState(controllerIndex).EvadePressed)
                         {
                             if (__instance.rootBehavior != null)
                             {
@@ -256,7 +256,7 @@ public static class BattleAIControllerPatch
                         }
 
                         //Left Skill Logic
-                        if (RyMCoopPlugin.VirtualControllers.GetState(controllerIndex).LeftSkillPressed)
+                        if (GDMCoopPlugin.VirtualControllers.GetState(controllerIndex).LeftSkillPressed)
                         {
                             if (GetDeepestBehavior(__instance.rootBehavior).ToString() == "Game.BattleAINullBehavior")
                             {
@@ -297,7 +297,7 @@ public static class BattleAIControllerPatch
                         }
 
                         //Right Skill Logic
-                        if (RyMCoopPlugin.VirtualControllers.GetState(controllerIndex).RightSkillPressed)
+                        if (GDMCoopPlugin.VirtualControllers.GetState(controllerIndex).RightSkillPressed)
                         {
                             if (GetDeepestBehavior(__instance.rootBehavior).ToString() == "Game.BattleAINullBehavior")
                             {
