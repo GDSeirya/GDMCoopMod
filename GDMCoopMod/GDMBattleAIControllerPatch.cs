@@ -93,6 +93,14 @@ public static class BattleAIControllerPatch
         ClearInit();
     }
 
+    /// <summary>
+    /// Returns the state whether if AI is enabled or not.
+    /// </summary>
+    public static bool IsPartyAIEnabled()
+    {
+        return isPartyAiEnabled;
+    }
+
     [HarmonyPrefix]
     public static bool Prefix(ref BattleAIController __instance)
     {
@@ -127,7 +135,6 @@ public static class BattleAIControllerPatch
                 }
                 //get controller based on partyIndex assigned earlier
                 int controllerIndex = GDMCoopMod.GDMControllerRouting.GetControllerForParty(__instance.OwnerObject.indexInParty);
-
                 //if valid controler indexes
                 if (controllerIndex >= 0 && controllerIndex < 4)
                 {

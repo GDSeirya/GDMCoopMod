@@ -24,15 +24,11 @@ public static class GDMOverlayManager
             if (overlay == target)
                 break;
 
-            y += overlay.Height + 10;
+            float h = overlay.Height <= 0 ? 30 : overlay.Height; // fallback
+            y += h + 10;
         }
 
-        return new Rect(
-            10,
-            y,
-            target.Width,
-            target.Height
-        );
+        return new Rect(10, y, target.Width, target.Height);
     }
 }
 

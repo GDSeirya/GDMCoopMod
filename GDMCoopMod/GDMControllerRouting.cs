@@ -12,9 +12,15 @@
         public static void AssignController(int partyIndex, int controllerIndex)
         {
             if (partyIndex < 0 || partyIndex > 3)
+            {
                 return;
-
+            }
             routing[partyIndex] = controllerIndex;
+        }
+
+        public static void UnassignCharacter(int partyIndex)
+        {
+            routing[partyIndex] = -1;
         }
 
         /// <summary>

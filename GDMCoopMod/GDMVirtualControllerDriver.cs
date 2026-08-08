@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 namespace GDMCoopMod
 {
-    public class GDMCoopUpdateDriver : MonoBehaviour
+    public class GDMVirtualControllerDriver : MonoBehaviour
     {
         void Update()
         {

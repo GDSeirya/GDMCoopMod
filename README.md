@@ -35,7 +35,7 @@ Current features:
 3. Copy the plugin DLL into:
 
 ```
-Star Ocean The Second Story R/
+STAR OCEAN THE SECOND STORY R/
 └── BepInEx/
     └── plugins/
         └── GDMCoopMod.dll
