@@ -116,6 +116,11 @@ BepInEx/interop/
 ├── Il2Cppmscorlib.dll
 ├── UnityEngine.CoreModule.dll
 ├── UnityEngine.IMGUIModule.dll
+├── UnityEngine.UI.dll
+├── UnityEngine.PhysicsModule.dll
+├── UnityEngine.TextRenderingModule.dll
+├── UnityEngine.InputLegacyModule.dll
+├── Unity.InputSystem.dll
 └── Assembly-CSharp.dll
 ```
 
