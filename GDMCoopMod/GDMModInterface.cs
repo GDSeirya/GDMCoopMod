@@ -151,6 +151,19 @@ public class GDMModInterface : MonoBehaviour
 
         for (int i = 1; i < 4; i++)
         {
+            if (GDMCoopPlugin.VirtualControllers.GetState(i).TargetingModePressed)
+            {
+                BattleAIControllerPatch.SetHostTargetingMode(i, !BattleAIControllerPatch.GetHostTargetingMode(i));
+                if (BattleAIControllerPatch.GetHostTargetingMode(i))
+                {
+                    GDMCoopPlugin.OverlayHost.Init($"Controller {i} is targeting host's target.");
+                }
+                else
+                {
+                    GDMCoopPlugin.OverlayHost.Init($"Controller {i} is targeting their closest target.");
+                }
+                    
+            }
             if (GDMCoopPlugin.VirtualControllers.GetState(i).ChangeToSlot1Pressed)
             {
                 if (GDMControllerRouting.GetControllerForParty(0) == i)

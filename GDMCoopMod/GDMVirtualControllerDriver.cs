@@ -31,6 +31,7 @@ namespace GDMCoopMod
                     state.ChangeToSlot2Held = false;
                     state.ChangeToSlot3Held = false;
                     state.ChangeToSlot4Held = false;
+                    state.TargetingModeHeld = false;
 
                     // Update press/release events
                     state.UpdateEvents();
@@ -54,6 +55,7 @@ namespace GDMCoopMod
                 state.ChangeToSlot2Held = pad.dpad.right.isPressed;
                 state.ChangeToSlot3Held = pad.dpad.down.isPressed;
                 state.ChangeToSlot4Held = pad.dpad.left.isPressed;
+                state.TargetingModeHeld = pad.leftTrigger.isPressed;
 
                 // Compute press/release events
                 state.UpdateEvents();

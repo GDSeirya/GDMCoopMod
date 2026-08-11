@@ -16,6 +16,7 @@ namespace GDMCoopMod
         public bool ChangeToSlot2Held;
         public bool ChangeToSlot3Held; 
         public bool ChangeToSlot4Held;
+        public bool TargetingModeHeld;
 
         // PRESS events (onPress)
         public bool AttackPressed;
@@ -26,6 +27,7 @@ namespace GDMCoopMod
         public bool ChangeToSlot2Pressed;
         public bool ChangeToSlot3Pressed;
         public bool ChangeToSlot4Pressed;
+        public bool TargetingModePressed;
 
         // RELEASE events (onRelease)
         public bool AttackReleased;
@@ -36,6 +38,7 @@ namespace GDMCoopMod
         public bool ChangeToSlot2Released;
         public bool ChangeToSlot3Released;
         public bool ChangeToSlot4Released;
+        public bool TargetingModeReleased;
         
         // Previous frame states
         public bool PrevAttack;
@@ -46,6 +49,7 @@ namespace GDMCoopMod
         public bool PrevChangeToSlot2;
         public bool PrevChangeToSlot3;
         public bool PrevChangeToSlot4;
+        public bool PrevTargetingMode;
 
         public void UpdateEvents()
         {
@@ -73,6 +77,9 @@ namespace GDMCoopMod
             ChangeToSlot4Pressed = ChangeToSlot4Held && !PrevChangeToSlot4;
             ChangeToSlot4Released = !ChangeToSlot4Held && PrevChangeToSlot4;
 
+            TargetingModePressed = TargetingModeHeld && !PrevTargetingMode;
+            TargetingModeReleased = !TargetingModeHeld && PrevTargetingMode;
+
             // Update previous frame states
             PrevAttack = AttackHeld;
             PrevEvade = EvadeHeld;
@@ -82,6 +89,7 @@ namespace GDMCoopMod
             PrevChangeToSlot2 = ChangeToSlot2Held;
             PrevChangeToSlot3 = ChangeToSlot3Held;
             PrevChangeToSlot4 = ChangeToSlot4Held;
+            PrevTargetingMode = TargetingModeHeld;
         }
 
         public void Clear()
@@ -98,6 +106,7 @@ namespace GDMCoopMod
             ChangeToSlot2Held = false;
             ChangeToSlot3Held = false;
             ChangeToSlot4Held = false;
+            TargetingModeHeld = false;
 
             // Press events
             AttackPressed = false;
@@ -108,6 +117,7 @@ namespace GDMCoopMod
             ChangeToSlot2Pressed = false;
             ChangeToSlot3Pressed = false;
             ChangeToSlot4Pressed = false;
+            TargetingModePressed = false;
 
             // Release events
             AttackReleased = false;
@@ -118,6 +128,7 @@ namespace GDMCoopMod
             ChangeToSlot2Released = false;
             ChangeToSlot3Released = false;
             ChangeToSlot4Released = false;
+            TargetingModeReleased = false;
 
             // Previous frame states
             PrevAttack = false;
@@ -128,6 +139,7 @@ namespace GDMCoopMod
             PrevChangeToSlot2 = false;
             PrevChangeToSlot3 = false;
             PrevChangeToSlot4 = false;
+            PrevTargetingMode = false;
         }
     }
 }

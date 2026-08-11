@@ -1,5 +1,6 @@
 ﻿using Game;
 using HarmonyLib;
+using SimpleSpritePacker;
 using System.Collections.Generic;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
@@ -8,6 +9,28 @@ using Vector3 = UnityEngine.Vector3;
 public static class BattleAIControllerPatch
 {
     private static bool isPartyAiEnabled = false;
+    private static bool[] useHostTarget = new bool[4] { true, true, true, true };
+    private static object __instance;
+
+    public static void SetHostTargetingMode(int index, bool isEnabled)
+    {
+        if (index >= 0 && index <= 3)
+        {
+            useHostTarget[index] = isEnabled;
+        }
+    }
+
+    public static bool GetHostTargetingMode(int index)
+    {
+        if (index >= 0 && index <= 3)
+        {
+            return useHostTarget[index];
+        }
+        else
+        {
+            return false;
+        }
+    }
 
     static private class AiInitTracker
     {
@@ -91,6 +114,28 @@ public static class BattleAIControllerPatch
     {
         isPartyAiEnabled = setTo;
         ClearInit();
+    }
+
+    public static BattleEnemy GetClosestEnemy(BattleCharacter battleCharacter)
+    {
+        Vector3 home = battleCharacter.Position;
+        BattleEnemy closestEnemy = null;
+        float bestDist = float.MaxValue;
+
+        for (int i = 0; i < BattleManager.Instance.battleEnemyList.Count; i++)
+        {
+            if (!BattleManager.Instance.battleEnemyList[i].IsDead())
+            {
+                float dist = (BattleManager.Instance.battleEnemyList[i].Position - home).sqrMagnitude;
+
+                if (dist < bestDist)
+                {
+                    bestDist = dist;
+                    closestEnemy = BattleManager.Instance.battleEnemyList[i];
+                }
+            }
+        }
+        return closestEnemy;
     }
 
     /// <summary>
@@ -216,7 +261,26 @@ public static class BattleAIControllerPatch
 
                                 //Perform an attack request on target
                                 //BattleCharacterActionResult actionResult;
-                                __instance.OwnerObject.GetCharacterController().OnNormalAttack(BattleManager.GetInstance().GetControlPlayerTarget());
+
+                                //target is created here
+                                if (useHostTarget[controllerIndex])
+                                {
+                                    __instance.OwnerObject.GetCharacterController().OnNormalAttack(BattleManager.GetInstance().GetControlPlayerTarget());
+                                }
+                                else
+                                {
+                                    BattleEnemy closestEnemy = GetClosestEnemy(__instance.OwnerObject);
+                                    if (closestEnemy != null)
+                                    {
+                                        __instance.OwnerObject.GetCharacterController().OnNormalAttack(closestEnemy);
+                                    }
+                                    else
+                                    {
+                                        //by default, target host's target
+                                        __instance.OwnerObject.GetCharacterController().OnNormalAttack(BattleManager.GetInstance().GetControlPlayerTarget());
+                                    }
+                                }
+
 
                                 //Store original Tactics ID
                                 TacticsID originalId = __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID;
