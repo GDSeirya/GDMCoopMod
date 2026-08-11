@@ -10,9 +10,9 @@ public class GDMModInterface : MonoBehaviour
     private KeyboardShortcut f2Key = new KeyboardShortcut(KeyCode.F2); //P2C2 Assignment Key
     private KeyboardShortcut f3Key = new KeyboardShortcut(KeyCode.F3); //P3C3 Assignment Key
     private KeyboardShortcut f4Key = new KeyboardShortcut(KeyCode.F4); //P4C4 Assignment Key
-    private KeyboardShortcut f5Key = new KeyboardShortcut(KeyCode.F5); //Unassignment Key
-    private KeyboardShortcut f6Key = new KeyboardShortcut(KeyCode.F6); //Unassign all Key
-    private KeyboardShortcut f7Key = new KeyboardShortcut(KeyCode.F7); //Display Key
+    private KeyboardShortcut f5Key = new KeyboardShortcut(KeyCode.F5); //Display Key
+    private KeyboardShortcut f6Key = new KeyboardShortcut(KeyCode.F6); //Unassignment Key
+    private KeyboardShortcut f7Key = new KeyboardShortcut(KeyCode.F7); //Unassign all Key
     private bool isSelectingCharacter;
     private int controllerIndexToAssign;
     private int partyIndexToAssign;
@@ -73,7 +73,7 @@ public class GDMModInterface : MonoBehaviour
             else if (f2Key.IsDown()) controllerIndexToAssign = 1;
             else if (f3Key.IsDown()) controllerIndexToAssign = 2;
             else if (f4Key.IsDown()) controllerIndexToAssign = 3;
-            else if (f5Key.IsDown())
+            else if (f6Key.IsDown())
             {
                 GDMCoopPlugin.OverlayHost.Init($"Select a controller first to clear.");
             }
@@ -89,8 +89,8 @@ public class GDMModInterface : MonoBehaviour
             else if (f2Key.IsDown()) partyIndexToAssign = 1;
             else if (f3Key.IsDown()) partyIndexToAssign = 2;
             else if (f4Key.IsDown()) partyIndexToAssign = 3;
-            else if (f5Key.IsDown()) partyIndexToAssign = -1;
-            if (f1Key.IsDown() || f2Key.IsDown() || f3Key.IsDown() || f4Key.IsDown() || f5Key.IsDown())
+            else if (f6Key.IsDown()) partyIndexToAssign = -1;
+            if (f1Key.IsDown() || f2Key.IsDown() || f3Key.IsDown() || f4Key.IsDown() || f6Key.IsDown())
             {
                 isSelectingCharacter = false;
                 
@@ -106,7 +106,7 @@ public class GDMModInterface : MonoBehaviour
             }
         }
 
-        if (f6Key.IsDown())
+        if (f7Key.IsDown())
         {
             for (int i = 0; i < 4; i++)
             {
@@ -118,7 +118,7 @@ public class GDMModInterface : MonoBehaviour
             }
         }
 
-        if (f7Key.IsDown())
+        if (f5Key.IsDown())
         {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < 4; i++)
@@ -146,6 +146,69 @@ public class GDMModInterface : MonoBehaviour
             else
             {
                 GDMCoopPlugin.OverlayHost.Init($"No controllers detected.");
+            }
+        }
+
+        for (int i = 1; i < 4; i++)
+        {
+            if (GDMCoopPlugin.VirtualControllers.GetState(i).ChangeToSlot1Pressed)
+            {
+                if (GDMControllerRouting.GetControllerForParty(0) == i)
+                {
+                    // Already assigned to this character: toggle off.
+                    UnassignSelectedCharacter(0);
+                }
+                else
+                {
+                    // Remove this controller from any other character first.
+                    if (GDMControllerRouting.GetControllerForParty(1) == i) UnassignSelectedCharacter(1);
+                    if (GDMControllerRouting.GetControllerForParty(2) == i) UnassignSelectedCharacter(2);
+                    if (GDMControllerRouting.GetControllerForParty(3) == i) UnassignSelectedCharacter(3);
+                    // Now assign it to the requested character.
+                    AssignCharacterToController(0, i);
+                }
+            }
+            else if (GDMCoopPlugin.VirtualControllers.GetState(i).ChangeToSlot2Pressed)
+            {
+                if (GDMControllerRouting.GetControllerForParty(1) == i)
+                {
+                    UnassignSelectedCharacter(1);
+                }
+                else
+                {
+                    if (GDMControllerRouting.GetControllerForParty(0) == i) UnassignSelectedCharacter(0);
+                    if (GDMControllerRouting.GetControllerForParty(2) == i) UnassignSelectedCharacter(2);
+                    if (GDMControllerRouting.GetControllerForParty(3) == i) UnassignSelectedCharacter(3);
+                    AssignCharacterToController(1, i);
+                }
+            }
+            else if (GDMCoopPlugin.VirtualControllers.GetState(i).ChangeToSlot3Pressed)
+            {
+                if (GDMControllerRouting.GetControllerForParty(2) == i)
+                {
+                    UnassignSelectedCharacter(2);
+                }
+                else
+                {
+                    if (GDMControllerRouting.GetControllerForParty(0) == i) UnassignSelectedCharacter(0);
+                    if (GDMControllerRouting.GetControllerForParty(1) == i) UnassignSelectedCharacter(1);
+                    if (GDMControllerRouting.GetControllerForParty(3) == i) UnassignSelectedCharacter(3);
+                    AssignCharacterToController(2, i);
+                }
+            }
+            else if (GDMCoopPlugin.VirtualControllers.GetState(i).ChangeToSlot4Pressed)
+            {
+                if (GDMControllerRouting.GetControllerForParty(3) == i)
+                {
+                    UnassignSelectedCharacter(3);
+                }
+                else
+                {
+                    if (GDMControllerRouting.GetControllerForParty(0) == i) UnassignSelectedCharacter(0);
+                    if (GDMControllerRouting.GetControllerForParty(1) == i) UnassignSelectedCharacter(1);
+                    if (GDMControllerRouting.GetControllerForParty(2) == i) UnassignSelectedCharacter(2);
+                    AssignCharacterToController(3, i);
+                }
             }
         }
 

@@ -27,6 +27,10 @@ namespace GDMCoopMod
                     state.EvadeHeld = false;
                     state.LeftSkillHeld = false;
                     state.RightSkillHeld = false;
+                    state.ChangeToSlot1Held = false;
+                    state.ChangeToSlot2Held = false;
+                    state.ChangeToSlot3Held = false;
+                    state.ChangeToSlot4Held = false;
 
                     // Update press/release events
                     state.UpdateEvents();
@@ -46,6 +50,10 @@ namespace GDMCoopMod
                 state.EvadeHeld = pad.buttonSouth.isPressed;
                 state.LeftSkillHeld = pad.leftShoulder.isPressed;
                 state.RightSkillHeld = pad.rightShoulder.isPressed;
+                state.ChangeToSlot1Held = pad.dpad.up.isPressed;
+                state.ChangeToSlot2Held = pad.dpad.right.isPressed;
+                state.ChangeToSlot3Held = pad.dpad.down.isPressed;
+                state.ChangeToSlot4Held = pad.dpad.left.isPressed;
 
                 // Compute press/release events
                 state.UpdateEvents();
