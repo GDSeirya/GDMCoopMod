@@ -62,9 +62,9 @@ To assign a controller to a character:
 | **F2** | Assign selected controller to Character 2 / Select Controller 2 |
 | **F3** | Assign selected controller to Character 3 / Select Controller 3 |
 | **F4** | Assign selected controller to Character 4 / Select Controller 4 |
-| **F5** | Unassign the selected controller |
-| **F6** | Unassign all controllers |
-| **F7** | Display controller/assignment information |
+| **F5** | Display controller/assignment information |
+| **F6** | Unassign the selected controller |
+| **F7** | Unassign all controllers |
 
 > **Note:** Pressing **F2** selects Controller 2. Once a controller is selected, pressing **F1–F4** assigns it to the corresponding character.
 
@@ -74,8 +74,7 @@ The following keys control whether the game's AI is enabled for the characters:
 
 | Key | Function |
 |---|---|
-| **F9** | Enable AI |
-| **F10** | Disable AI |
+| **F9** | Toggle AI |
 
 ### Example
 
@@ -87,11 +86,11 @@ To assign **Controller 2** to **Character 3**:
 To remove Controller 2 from its assigned character:
 
 1. Press **F2** to select Controller 2.
-2. Press **F5** to unassign it.
+2. Press **F6** to unassign it.
 
 To reset all controller assignments:
 
-- Press **F6**.
+- Press **F7**.
 
 ## Building From Source
 
