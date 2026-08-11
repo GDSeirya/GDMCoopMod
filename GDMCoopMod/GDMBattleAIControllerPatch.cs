@@ -10,7 +10,6 @@ public static class BattleAIControllerPatch
 {
     private static bool isPartyAiEnabled = false;
     private static bool[] useHostTarget = new bool[4] { true, true, true, true };
-    private static object __instance;
 
     public static void SetHostTargetingMode(int index, bool isEnabled)
     {
@@ -360,8 +359,23 @@ public static class BattleAIControllerPatch
                             BattleCharacterActionResult actionResult = BattleCharacterActionResult.Invalid;
                             if (skillId != BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().reserveBattleSkillID == BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().battleSkillLeftIndex < 2 && !__instance.OwnerObject.GetCharacterController().IsLinkComboAction())
                             {
-                                actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, BattleDefine.RootType.Left);
-
+                                BattleCharacter targetToCheck = __instance.OwnerObject.GetCharacterController().GetTargetOnAction(skillId);
+                                if (targetToCheck.IsPlayerSide() || useHostTarget[controllerIndex])
+                                {
+                                    actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, BattleDefine.RootType.Left);
+                                }
+                                else
+                                {
+                                    BattleEnemy closestEnemy = GetClosestEnemy(__instance.OwnerObject);
+                                    if (closestEnemy != null)
+                                    {
+                                        actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, closestEnemy, BattleDefine.RootType.Left);
+                                    }
+                                    else
+                                    {
+                                        actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, BattleDefine.RootType.Left);
+                                    }
+                                }
                             }
                             //Return original tactics to AI to prevent strategy menu from being bad
                             __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID = originalId;
@@ -392,7 +406,26 @@ public static class BattleAIControllerPatch
                             BattleSkillID skillId = __instance.OwnerObject.GetCharacterController().GetNextBattleSkillID(BattleDefine.RootType.Right);
                             if (skillId != BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().reserveBattleSkillID == BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().battleSkillRightIndex < 2 && !__instance.OwnerObject.GetCharacterController().IsLinkComboAction())
                             {
-                                actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, BattleDefine.RootType.Right);
+                                //actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, BattleDefine.RootType.Right);
+
+
+                                BattleCharacter targetToCheck = __instance.OwnerObject.GetCharacterController().GetTargetOnAction(skillId);
+                                if (targetToCheck.IsPlayerSide() || useHostTarget[controllerIndex])
+                                {
+                                    actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, BattleDefine.RootType.Right);
+                                }
+                                else
+                                {
+                                    BattleEnemy closestEnemy = GetClosestEnemy(__instance.OwnerObject);
+                                    if (closestEnemy != null)
+                                    {
+                                        actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, closestEnemy, BattleDefine.RootType.Right);
+                                    }
+                                    else
+                                    {
+                                        actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, BattleDefine.RootType.Right);
+                                    }
+                                }
                             }
                             __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID = originalId;
                         }

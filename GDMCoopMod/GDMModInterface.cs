@@ -17,8 +17,7 @@ public class GDMModInterface : MonoBehaviour
     private int controllerIndexToAssign;
     private int partyIndexToAssign;
 
-    private KeyboardShortcut enableAi = new KeyboardShortcut(KeyCode.F9); //Enable AI Key
-    private KeyboardShortcut disableAi = new KeyboardShortcut(KeyCode.F10); //Disable AI Key
+    private KeyboardShortcut toggleAi = new KeyboardShortcut(KeyCode.F9); //Enable AI Key
 
     public void Start()
     {
@@ -41,7 +40,7 @@ public class GDMModInterface : MonoBehaviour
 
     public void Update()
     {
-        if (enableAi.IsDown())
+        if (toggleAi.IsDown())
         {
             if (BattleAIControllerPatch.IsPartyAIEnabled())
             {
@@ -50,20 +49,8 @@ public class GDMModInterface : MonoBehaviour
             }
             else
             {
-                GDMCoopPlugin.OverlayHost.Init("Party AI is already enabled.", 5);
-            }
-        }
-
-        if (disableAi.IsDown())
-        {
-            if (BattleAIControllerPatch.IsPartyAIEnabled())
-            {
                 BattleAIControllerPatch.SetOtherPlayerAI(false);
                 GDMCoopPlugin.OverlayHost.Init("Party AI disabled.", 5);
-            }
-            else
-            {
-                GDMCoopPlugin.OverlayHost.Init("Party AI is already disabled.", 5);
             }
         }
 
