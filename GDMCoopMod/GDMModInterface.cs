@@ -3,6 +3,7 @@ using System;
 using System.Text;
 using UnityEngine;
 using GDMCoopMod;
+using Game;
 
 public class GDMModInterface : MonoBehaviour
 {
@@ -143,11 +144,11 @@ public class GDMModInterface : MonoBehaviour
                 BattleAIControllerPatch.SetHostTargetingMode(i, !BattleAIControllerPatch.GetHostTargetingMode(i));
                 if (BattleAIControllerPatch.GetHostTargetingMode(i))
                 {
-                    GDMCoopPlugin.OverlayHost.Init($"Controller {i} is targeting host's target.");
+                    GDMCoopPlugin.OverlayHost.Init($"Controller {i+1} is targeting host's target.");
                 }
                 else
                 {
-                    GDMCoopPlugin.OverlayHost.Init($"Controller {i} is targeting their closest target.");
+                    GDMCoopPlugin.OverlayHost.Init($"Controller {i+1} is targeting their closest target.");
                 }
                     
             }
