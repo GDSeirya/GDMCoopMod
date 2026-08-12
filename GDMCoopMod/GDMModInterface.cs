@@ -43,10 +43,11 @@ public class GDMModInterface : MonoBehaviour
     {
         if (toggleAi.IsDown())
         {
-            if (BattleAIControllerPatch.IsPartyAIEnabled())
+            if (!BattleAIControllerPatch.IsPartyAIEnabled())
             {
                 BattleAIControllerPatch.SetOtherPlayerAI(true);
                 GDMCoopPlugin.OverlayHost.Init("Party AI enabled.", 5);
+
             }
             else
             {
