@@ -14,6 +14,7 @@ public class GDMModInterface : MonoBehaviour
     private KeyboardShortcut f5Key = new KeyboardShortcut(KeyCode.F5); //Display Key
     private KeyboardShortcut f6Key = new KeyboardShortcut(KeyCode.F6); //Unassignment Key
     private KeyboardShortcut f7Key = new KeyboardShortcut(KeyCode.F7); //Unassign all Key
+    private KeyboardShortcut f8Key = new KeyboardShortcut(KeyCode.F8); //TestKey
     private bool isSelectingCharacter;
     private int controllerIndexToAssign;
     private int partyIndexToAssign;
@@ -30,13 +31,16 @@ public class GDMModInterface : MonoBehaviour
     public void AssignCharacterToController(int selectedPartyIndex, int selectedControllerIndex)
     {
         GDMControllerRouting.AssignController(selectedPartyIndex, selectedControllerIndex);
-        GDMCoopPlugin.OverlayHost.Init($"Controller {selectedControllerIndex + 1} is now assigned to character {selectedPartyIndex + 1}.");
+        //GDMCoopPlugin.OverlayHost.Init($"Controller {selectedControllerIndex + 1} is now assigned to character {selectedPartyIndex + 1}.");
+        GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("ControllerAssigned", selectedControllerIndex + 1, selectedPartyIndex + 1));
+        //ControllerAssigned
     }
 
     public void UnassignSelectedCharacter(int selectedPartyIndex)
     {
         GDMControllerRouting.UnassignCharacter(selectedPartyIndex);
-        GDMCoopPlugin.OverlayHost.Init($"Character {selectedPartyIndex + 1} is now unassigned.");
+        //GDMCoopPlugin.OverlayHost.Init($"Character {selectedPartyIndex + 1} is now unassigned.");
+        GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("CharacterUnassigned", selectedPartyIndex + 1));
     }
 
     public void Update()
@@ -46,13 +50,14 @@ public class GDMModInterface : MonoBehaviour
             if (!BattleAIControllerPatch.IsPartyAIEnabled())
             {
                 BattleAIControllerPatch.SetOtherPlayerAI(true);
-                GDMCoopPlugin.OverlayHost.Init("Party AI enabled.", 5);
-
+                //GDMCoopPlugin.OverlayHost.Init("Party AI enabled.", 5);
+                GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("PartyAIEnabled"), 5);
             }
             else
             {
                 BattleAIControllerPatch.SetOtherPlayerAI(false);
-                GDMCoopPlugin.OverlayHost.Init("Party AI disabled.", 5);
+                //GDMCoopPlugin.OverlayHost.Init("Party AI disabled.", 5);
+                GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("PartyAIDisabled"), 5);
             }
         }
 
@@ -64,12 +69,14 @@ public class GDMModInterface : MonoBehaviour
             else if (f4Key.IsDown()) controllerIndexToAssign = 3;
             else if (f6Key.IsDown())
             {
-                GDMCoopPlugin.OverlayHost.Init($"Select a controller first to clear.");
+                //GDMCoopPlugin.OverlayHost.Init($"Select a controller first to clear.");
+                GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("SelectControllerFirst"));
             }
             if (f1Key.IsDown() || f2Key.IsDown() || f3Key.IsDown() || f4Key.IsDown())
             {
                 isSelectingCharacter = true;
-                GDMCoopPlugin.OverlayHost.Init($"Selected controller {controllerIndexToAssign+1}.");
+                //GDMCoopPlugin.OverlayHost.Init($"Selected controller {controllerIndexToAssign+1}.");
+                GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("SelectedController", controllerIndexToAssign + 1));
             }
         }
         else
@@ -107,6 +114,11 @@ public class GDMModInterface : MonoBehaviour
             }
         }
 
+        if (f8Key.IsDown())
+        {
+            GDMCoopPlugin.OverlayHost.Init(GameManager.GetTextLanguageSuffix());
+        }
+
         if (f5Key.IsDown())
         {
             StringBuilder sb = new StringBuilder();
@@ -115,11 +127,14 @@ public class GDMModInterface : MonoBehaviour
                 int selectedController = GDMControllerRouting.GetControllerForParty(i);
                 if (selectedController != -1)
                 {
-                    sb.AppendLine($"Character {i + 1} is assigned to controller {selectedController + 1}.");
+                    //sb.AppendLine($"Character {i + 1} is assigned to controller {selectedController + 1}.");
+                    sb.AppendLine(LanguageManager.Get("CharacterAssignedToController", i + 1, selectedController + 1));
                 }
                 else
                 {
-                    sb.AppendLine($"Character {i + 1} is not assigned to any controllers.");
+
+                    //sb.AppendLine($"Character {i + 1} is not assigned to any controllers.");
+                    sb.AppendLine(LanguageManager.Get("CharacterNotAssigned", i + 1));
                 }
             }
             if (sb.ToString().Length > 0)
@@ -134,7 +149,8 @@ public class GDMModInterface : MonoBehaviour
             }
             else
             {
-                GDMCoopPlugin.OverlayHost.Init($"No controllers detected.");
+                //GDMCoopPlugin.OverlayHost.Init($"No controllers detected.");
+                GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("NoControllersDetected"));
             }
         }
 
@@ -145,13 +161,15 @@ public class GDMModInterface : MonoBehaviour
                 BattleAIControllerPatch.SetHostTargetingMode(i, !BattleAIControllerPatch.GetHostTargetingMode(i));
                 if (BattleAIControllerPatch.GetHostTargetingMode(i))
                 {
-                    GDMCoopPlugin.OverlayHost.Init($"Controller {i+1} is targeting host's target.");
+                    //GDMCoopPlugin.OverlayHost.Init($"Controller {i+1} is targeting host's target.");
+                    GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("TargetingHost", i+1));
                 }
                 else
                 {
-                    GDMCoopPlugin.OverlayHost.Init($"Controller {i+1} is targeting their closest target.");
+                    //GDMCoopPlugin.OverlayHost.Init($"Controller {i+1} is targeting their closest target.");
+                    GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("TargetingClosest", i + 1));
                 }
-                    
+
             }
             if (GDMCoopPlugin.VirtualControllers.GetState(i).ChangeToSlot1Pressed)
             {

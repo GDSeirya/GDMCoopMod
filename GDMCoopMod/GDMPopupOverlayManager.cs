@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public static class GDMOverlayManager
+public static class GDMPopupOverlayManager
 {
     private static List<GDMOverlayEntry> overlays = new();
 
