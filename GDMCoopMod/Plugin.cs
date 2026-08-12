@@ -5,7 +5,7 @@ using BepInEx.Unity.IL2CPP;
 using GDMCoopMod;
 using HarmonyLib;
 
-[BepInPlugin("gdm.coopmod", "GDM Coop Plugin", "1.3")]
+[BepInPlugin("gdm.coopmod", "GDM Coop Plugin", "1.3.1")]
 public class GDMCoopPlugin : BasePlugin
 {
     public static ManualLogSource StaticLog;
