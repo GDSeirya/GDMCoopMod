@@ -48,7 +48,11 @@ public static class LanguageManager
         { "PluginLoaded", "GDM Coop Plugin Loaded" },
         { "PluginAuthors", "Developed by GD Seirya & Mithras Seirya" },
         { "ControllerDisabled", "Controller {0} is disabled." },
-        { "InterfaceNull", "GDMModInterface is null. Cannot assign controller." }
+        { "InterfaceNull", "GDMModInterface is null. Cannot assign controller." },
+
+        // Controller polling messages
+        { "ControllerRegistered", "Registered {0}, controller {1}." },
+        { "ControllerDeregistered", "Deregistered {0}, controller {1}." }
     };
 
     // -------------------------
@@ -71,7 +75,10 @@ public static class LanguageManager
         { "PluginLoaded", "GDM Coop Plugin が読み込まれました" },
         { "PluginAuthors", "GD Seirya と Mithras Seirya によって開発されました" },
         { "ControllerDisabled", "コントローラー {0} は無効化されています。" },
-        { "InterfaceNull", "GDMModInterface が null のため、コントローラーを割り当てできません。" }
+        { "InterfaceNull", "GDMModInterface が null のため、コントローラーを割り当てできません。" },
+
+        { "ControllerRegistered", "{0} をコントローラー {1} として登録しました。" },
+        { "ControllerDeregistered", "{0} をコントローラー {1} から登録解除しました。" }
     };
 
     // -------------------------
@@ -94,7 +101,10 @@ public static class LanguageManager
         { "PluginLoaded", "GDM Coop Plugin 로드됨" },
         { "PluginAuthors", "GD Seirya & Mithras Seirya 개발" },
         { "ControllerDisabled", "컨트롤러 {0}은(는) 비활성화되었습니다." },
-        { "InterfaceNull", "GDMModInterface가 null입니다. 컨트롤러를 배정할 수 없습니다." }
+        { "InterfaceNull", "GDMModInterface가 null입니다. 컨트롤러를 배정할 수 없습니다." },
+
+        { "ControllerRegistered", "{0}을(를) 컨트롤러 {1}로 등록했습니다." },
+        { "ControllerDeregistered", "{0}을(를) 컨트롤러 {1}에서 등록 해제했습니다." }
     };
 
     // -------------------------
@@ -117,7 +127,10 @@ public static class LanguageManager
         { "PluginLoaded", "GDM Coop 插件已加载" },
         { "PluginAuthors", "由 GD Seirya 和 Mithras Seirya 开发" },
         { "ControllerDisabled", "控制器 {0} 已禁用。" },
-        { "InterfaceNull", "GDMModInterface 为 null，无法分配控制器。" }
+        { "InterfaceNull", "GDMModInterface 为 null，无法分配控制器。" },
+
+        { "ControllerRegistered", "已将 {0} 注册为控制器 {1}。" },
+        { "ControllerDeregistered", "已将 {0} 从控制器 {1} 中注销。" }
     };
 
     // -------------------------
@@ -140,7 +153,10 @@ public static class LanguageManager
         { "PluginLoaded", "GDM Coop 插件已載入" },
         { "PluginAuthors", "由 GD Seirya 與 Mithras Seirya 開發" },
         { "ControllerDisabled", "控制器 {0} 已停用。" },
-        { "InterfaceNull", "GDMModInterface 為 null，無法分配控制器。" }
+        { "InterfaceNull", "GDMModInterface 為 null，無法分配控制器。" },
+
+        { "ControllerRegistered", "已將 {0} 註冊為控制器 {1}。" },
+        { "ControllerDeregistered", "已將 {0} 從控制器 {1} 中註銷。" },
     };
 
     // -------------------------
@@ -163,7 +179,10 @@ public static class LanguageManager
         { "PluginLoaded", "GDM Coop Plugin chargé" },
         { "PluginAuthors", "Développé par GD Seirya & Mithras Seirya" },
         { "ControllerDisabled", "Le contrôleur {0} est désactivé." },
-        { "InterfaceNull", "GDMModInterface est nul. Impossible d'assigner le contrôleur." }
+        { "InterfaceNull", "GDMModInterface est nul. Impossible d'assigner le contrôleur." },
+
+        { "ControllerRegistered", "{0} enregistré comme contrôleur {1}." },
+        { "ControllerDeregistered", "{0} a été retiré du contrôleur {1}." }
     };
 
     // -------------------------
@@ -186,7 +205,10 @@ public static class LanguageManager
         { "PluginLoaded", "GDM Coop Plugin caricato" },
         { "PluginAuthors", "Sviluppato da GD Seirya & Mithras Seirya" },
         { "ControllerDisabled", "Il controller {0} è disattivato." },
-        { "InterfaceNull", "GDMModInterface è nullo. Impossibile assegnare il controller." }
+        { "InterfaceNull", "GDMModInterface è nullo. Impossibile assegnare il controller." },
+
+        { "ControllerRegistered", "{0} registrato come controller {1}." },
+        { "ControllerDeregistered", "{0} rimosso dal controller {1}." }
     };
 
     // -------------------------
@@ -209,7 +231,10 @@ public static class LanguageManager
         { "PluginLoaded", "GDM Coop Plugin geladen" },
         { "PluginAuthors", "Entwickelt von GD Seirya & Mithras Seirya" },
         { "ControllerDisabled", "Controller {0} ist deaktiviert." },
-        { "InterfaceNull", "GDMModInterface ist null. Controller kann nicht zugewiesen werden." }
+        { "InterfaceNull", "GDMModInterface ist null. Controller kann nicht zugewiesen werden." },
+
+        { "ControllerRegistered", "{0} als Controller {1} registriert." },
+        { "ControllerDeregistered", "{0} von Controller {1} abgemeldet." }
     };
 
     // -------------------------
@@ -232,7 +257,10 @@ public static class LanguageManager
         { "PluginLoaded", "GDM Coop Plugin cargado" },
         { "PluginAuthors", "Desarrollado por GD Seirya & Mithras Seirya" },
         { "ControllerDisabled", "El controlador {0} está desactivado." },
-        { "InterfaceNull", "GDMModInterface es nulo. No se puede asignar el controlador." }
+        { "InterfaceNull", "GDMModInterface es nulo. No se puede asignar el controlador." },
+
+        { "ControllerRegistered", "{0} registrado como controlador {1}." },
+        { "ControllerDeregistered", "{0} eliminado del controlador {1}." }
     };
 
     /// <summary>
