@@ -14,7 +14,6 @@ public class GDMModInterface : MonoBehaviour
     private KeyboardShortcut f5Key = new KeyboardShortcut(KeyCode.F5); //Display Key
     private KeyboardShortcut f6Key = new KeyboardShortcut(KeyCode.F6); //Unassignment Key
     private KeyboardShortcut f7Key = new KeyboardShortcut(KeyCode.F7); //Unassign all Key
-    private KeyboardShortcut f8Key = new KeyboardShortcut(KeyCode.F8); //TestKey
     private bool isSelectingCharacter;
     private int controllerIndexToAssign;
     private int partyIndexToAssign;
@@ -112,11 +111,6 @@ public class GDMModInterface : MonoBehaviour
                     UnassignSelectedCharacter(i);
                 }
             }
-        }
-
-        if (f8Key.IsDown())
-        {
-            GDMCoopPlugin.OverlayHost.Init(GameManager.GetTextLanguageSuffix());
         }
 
         if (f5Key.IsDown())
