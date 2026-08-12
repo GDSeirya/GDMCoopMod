@@ -15,7 +15,7 @@ public class GDMPopupOverlay : GDMOverlayEntry
     {
         _message = message;
         displayTime = duration;
-        GDMOverlayManager.Register(this);
+        GDMPopupOverlayManager.Register(this);
     }
 
     public void Update()
@@ -55,13 +55,13 @@ public class GDMPopupOverlay : GDMOverlayEntry
             return;
         }
 
-        Rect rect = GDMOverlayManager.GetRect(this);
+        Rect rect = GDMPopupOverlayManager.GetRect(this);
         GUI.Box(rect, _message, _style);
     }
 
     public void Destroy()
     {
-        GDMOverlayManager.Unregister(this);
+        GDMPopupOverlayManager.Unregister(this);
     }
 
     public bool IsExpired => elapsedTime > displayTime;
