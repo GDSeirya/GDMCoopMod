@@ -58,7 +58,7 @@ public static class LanguageManager
     {
         { "ControllerAssigned", "コントローラー {0} がキャラクター {1} に割り当てられました。" },
         { "CharacterUnassigned", "キャラクター {0} の割り当てが解除されました。" },
-        { "SelectControllerFirst", "先にコントローラーを選択してください。" },
+        { "SelectControllerFirst", "割り当てを解除するには、先にコントローラーを選択してください。" },
         { "SelectedController", "コントローラー {0} を選択しました。" },
         { "CharacterAssignedToController", "キャラクター {0} はコントローラー {1} に割り当てられています。" },
         { "CharacterNotAssigned", "キャラクター {0} はどのコントローラーにも割り当てられていません。" },
@@ -82,13 +82,13 @@ public static class LanguageManager
         { "ControllerAssigned", "컨트롤러 {0}가 캐릭터 {1}에 배정되었습니다." },
         { "CharacterUnassigned", "캐릭터 {0}의 배정이 해제되었습니다." },
         { "SelectControllerFirst", "먼저 컨트롤러를 선택하세요." },
-        { "SelectedController", "컨트롤러 {0}을(를) 선택했습니다." },
+        { "SelectedController", "컨트롤러 {0}를 선택했습니다." },
         { "CharacterAssignedToController", "캐릭터 {0}는 컨트롤러 {1}에 배정되어 있습니다." },
         { "CharacterNotAssigned", "캐릭터 {0}는 어떤 컨트롤러에도 배정되지 않았습니다." },
         { "NoControllersDetected", "컨트롤러가 감지되지 않았습니다." },
         { "PartyAIEnabled", "파티 AI가 활성화되었습니다." },
         { "PartyAIDisabled", "파티 AI가 비활성화되었습니다." },
-        { "TargetingHost", "컨트롤러 {0}가 호스트의 타겟을 조준합니다." },
+        { "TargetingHost", "컨트롤러 {0}가 호스트가 선택한 대상을 공격 대상으로 지정합니다." },
         { "TargetingClosest", "컨트롤러 {0}가 가장 가까운 타겟을 조준합니다." },
 
         { "PluginLoaded", "GDM Coop Plugin 로드됨" },
@@ -195,7 +195,7 @@ public static class LanguageManager
     private static readonly Dictionary<string, string> DE = new Dictionary<string, string>
     {
         { "ControllerAssigned", "Controller {0} wurde Charakter {1} zugewiesen." },
-        { "CharacterUnassigned", "Charakter {0} wurde freigegeben." },
+        { "CharacterUnassigned", "Charakter {0} ist nicht mehr zugewiesen." },
         { "SelectControllerFirst", "Bitte zuerst einen Controller auswählen." },
         { "SelectedController", "Controller {0} ausgewählt." },
         { "CharacterAssignedToController", "Charakter {0} ist Controller {1} zugewiesen." },
@@ -203,7 +203,7 @@ public static class LanguageManager
         { "NoControllersDetected", "Keine Controller erkannt." },
         { "PartyAIEnabled", "Gruppen‑KI aktiviert." },
         { "PartyAIDisabled", "Gruppen‑KI deaktiviert." },
-        { "TargetingHost", "Controller {0} zielt auf das Ziel des Hosts." },
+        { "TargetingHost", "Controller {0} greift das Ziel des Hosts an." },
         { "TargetingClosest", "Controller {0} zielt auf das nächste Ziel." },
 
         { "PluginLoaded", "GDM Coop Plugin geladen" },

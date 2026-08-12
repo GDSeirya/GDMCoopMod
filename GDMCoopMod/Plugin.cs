@@ -4,8 +4,9 @@ using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using GDMCoopMod;
 using HarmonyLib;
+using UnityEngine;
 
-[BepInPlugin("gdm.coopmod", "GDM Coop Plugin", "1.3.3")]
+[BepInPlugin("gdm.coopmod", "GDM Coop Plugin", "1.3.4")]
 public class GDMCoopPlugin : BasePlugin
 {
     public static ManualLogSource StaticLog;
@@ -68,7 +69,9 @@ public class GDMCoopPlugin : BasePlugin
         modInterface = AddComponent<GDMModInterface>();
         var updateDriver = AddComponent<GDMVirtualControllerDriver>();
         OverlayHost = AddComponent<GDMPopupOverlayHost>();
-
+#if DEBUG
+        AddComponent<GDMDebugDisplay>();
+#endif
 
         // -----------------------------
         // Startup messages
