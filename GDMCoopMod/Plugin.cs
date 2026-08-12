@@ -74,9 +74,9 @@ public class GDMCoopPlugin : BasePlugin
         // Startup messages
         // -----------------------------
 
-        OverlayHost.Init("GDM Coop Plugin Loaded", 15);
+        OverlayHost.Init(LanguageManager.Get("PluginLoaded"), 15);
 
-        OverlayHost.Init("Developed by GD Seirya & Mithras Seirya", 15);
+        OverlayHost.Init(LanguageManager.Get("PluginAuthors"), 15);
 
 
         // -----------------------------
@@ -100,14 +100,14 @@ public class GDMCoopPlugin : BasePlugin
         // -1 means don't assign this controller.
         if (partyIndex < 0)
         {
-            OverlayHost.Init($"Controller {controllerIndex + 1} is disabled.", 5);
+            OverlayHost.Init(LanguageManager.Get("ControllerDisabled", controllerIndex + 1), 5);
             return;
         }
 
         // Safety check.
         if (modInterface == null)
         {
-            OverlayHost.Init($"GDMModInterface is null. Cannot assign controller.", 5);
+            OverlayHost.Init(LanguageManager.Get("InterfaceNull"), 5);
             return;
         }
         modInterface.AssignCharacterToController(partyIndex,controllerIndex);

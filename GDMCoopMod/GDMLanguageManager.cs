@@ -22,8 +22,7 @@ public static class LanguageManager
                 case "en": return "en";
             }
 
-            // Fallback for unknown languages
-            return "en";
+            return "en"; // fallback
         }
     }
 
@@ -32,6 +31,7 @@ public static class LanguageManager
     // -------------------------
     private static readonly Dictionary<string, string> EN = new Dictionary<string, string>
     {
+        // Interface messages
         { "ControllerAssigned", "Controller {0} is now assigned to character {1}." },
         { "CharacterUnassigned", "Character {0} is now unassigned." },
         { "SelectControllerFirst", "Select a controller first to clear." },
@@ -42,7 +42,13 @@ public static class LanguageManager
         { "PartyAIEnabled", "Party AI enabled." },
         { "PartyAIDisabled", "Party AI disabled." },
         { "TargetingHost", "Controller {0} is targeting host's target." },
-        { "TargetingClosest", "Controller {0} is targeting their closest target." }
+        { "TargetingClosest", "Controller {0} is targeting their closest target." },
+
+        // Plugin messages
+        { "PluginLoaded", "GDM Coop Plugin Loaded" },
+        { "PluginAuthors", "Developed by GD Seirya & Mithras Seirya" },
+        { "ControllerDisabled", "Controller {0} is disabled." },
+        { "InterfaceNull", "GDMModInterface is null. Cannot assign controller." }
     };
 
     // -------------------------
@@ -60,7 +66,12 @@ public static class LanguageManager
         { "PartyAIEnabled", "パーティ AI が有効になりました。" },
         { "PartyAIDisabled", "パーティ AI が無効になりました。" },
         { "TargetingHost", "コントローラー {0} はホストのターゲットを狙っています。" },
-        { "TargetingClosest", "コントローラー {0} は最も近いターゲットを狙っています。" }
+        { "TargetingClosest", "コントローラー {0} は最も近いターゲットを狙っています。" },
+
+        { "PluginLoaded", "GDM Coop Plugin が読み込まれました" },
+        { "PluginAuthors", "GD Seirya と Mithras Seirya によって開発されました" },
+        { "ControllerDisabled", "コントローラー {0} は無効化されています。" },
+        { "InterfaceNull", "GDMModInterface が null のため、コントローラーを割り当てできません。" }
     };
 
     // -------------------------
@@ -78,7 +89,12 @@ public static class LanguageManager
         { "PartyAIEnabled", "파티 AI가 활성화되었습니다." },
         { "PartyAIDisabled", "파티 AI가 비활성화되었습니다." },
         { "TargetingHost", "컨트롤러 {0}가 호스트의 타겟을 조준합니다." },
-        { "TargetingClosest", "컨트롤러 {0}가 가장 가까운 타겟을 조준합니다." }
+        { "TargetingClosest", "컨트롤러 {0}가 가장 가까운 타겟을 조준합니다." },
+
+        { "PluginLoaded", "GDM Coop Plugin 로드됨" },
+        { "PluginAuthors", "GD Seirya & Mithras Seirya 개발" },
+        { "ControllerDisabled", "컨트롤러 {0}은(는) 비활성화되었습니다." },
+        { "InterfaceNull", "GDMModInterface가 null입니다. 컨트롤러를 배정할 수 없습니다." }
     };
 
     // -------------------------
@@ -96,7 +112,12 @@ public static class LanguageManager
         { "PartyAIEnabled", "队伍 AI 已启用。" },
         { "PartyAIDisabled", "队伍 AI 已禁用。" },
         { "TargetingHost", "控制器 {0} 正在瞄准主机的目标。" },
-        { "TargetingClosest", "控制器 {0} 正在瞄准最近的目标。" }
+        { "TargetingClosest", "控制器 {0} 正在瞄准最近的目标。" },
+
+        { "PluginLoaded", "GDM Coop 插件已加载" },
+        { "PluginAuthors", "由 GD Seirya 和 Mithras Seirya 开发" },
+        { "ControllerDisabled", "控制器 {0} 已禁用。" },
+        { "InterfaceNull", "GDMModInterface 为 null，无法分配控制器。" }
     };
 
     // -------------------------
@@ -114,7 +135,12 @@ public static class LanguageManager
         { "PartyAIEnabled", "隊伍 AI 已啟用。" },
         { "PartyAIDisabled", "隊伍 AI 已停用。" },
         { "TargetingHost", "控制器 {0} 正在瞄準主機的目標。" },
-        { "TargetingClosest", "控制器 {0} 正在瞄準最近的目標。" }
+        { "TargetingClosest", "控制器 {0} 正在瞄準最近的目標。" },
+
+        { "PluginLoaded", "GDM Coop 插件已載入" },
+        { "PluginAuthors", "由 GD Seirya 與 Mithras Seirya 開發" },
+        { "ControllerDisabled", "控制器 {0} 已停用。" },
+        { "InterfaceNull", "GDMModInterface 為 null，無法分配控制器。" }
     };
 
     // -------------------------
@@ -132,7 +158,12 @@ public static class LanguageManager
         { "PartyAIEnabled", "IA de l'équipe activée." },
         { "PartyAIDisabled", "IA de l'équipe désactivée." },
         { "TargetingHost", "Le contrôleur {0} vise la cible de l'hôte." },
-        { "TargetingClosest", "Le contrôleur {0} vise la cible la plus proche." }
+        { "TargetingClosest", "Le contrôleur {0} vise la cible la plus proche." },
+
+        { "PluginLoaded", "GDM Coop Plugin chargé" },
+        { "PluginAuthors", "Développé par GD Seirya & Mithras Seirya" },
+        { "ControllerDisabled", "Le contrôleur {0} est désactivé." },
+        { "InterfaceNull", "GDMModInterface est nul. Impossible d'assigner le contrôleur." }
     };
 
     // -------------------------
@@ -150,7 +181,12 @@ public static class LanguageManager
         { "PartyAIEnabled", "IA della squadra attivata." },
         { "PartyAIDisabled", "IA della squadra disattivata." },
         { "TargetingHost", "Il controller {0} sta mirando al bersaglio dell'host." },
-        { "TargetingClosest", "Il controller {0} sta mirando al bersaglio più vicino." }
+        { "TargetingClosest", "Il controller {0} sta mirando al bersaglio più vicino." },
+
+        { "PluginLoaded", "GDM Coop Plugin caricato" },
+        { "PluginAuthors", "Sviluppato da GD Seirya & Mithras Seirya" },
+        { "ControllerDisabled", "Il controller {0} è disattivato." },
+        { "InterfaceNull", "GDMModInterface è nullo. Impossibile assegnare il controller." }
     };
 
     // -------------------------
@@ -168,7 +204,12 @@ public static class LanguageManager
         { "PartyAIEnabled", "Gruppen‑KI aktiviert." },
         { "PartyAIDisabled", "Gruppen‑KI deaktiviert." },
         { "TargetingHost", "Controller {0} zielt auf das Ziel des Hosts." },
-        { "TargetingClosest", "Controller {0} zielt auf das nächste Ziel." }
+        { "TargetingClosest", "Controller {0} zielt auf das nächste Ziel." },
+
+        { "PluginLoaded", "GDM Coop Plugin geladen" },
+        { "PluginAuthors", "Entwickelt von GD Seirya & Mithras Seirya" },
+        { "ControllerDisabled", "Controller {0} ist deaktiviert." },
+        { "InterfaceNull", "GDMModInterface ist null. Controller kann nicht zugewiesen werden." }
     };
 
     // -------------------------
@@ -186,7 +227,12 @@ public static class LanguageManager
         { "PartyAIEnabled", "IA del grupo activada." },
         { "PartyAIDisabled", "IA del grupo desactivada." },
         { "TargetingHost", "El controlador {0} apunta al objetivo del anfitrión." },
-        { "TargetingClosest", "El controlador {0} apunta al objetivo más cercano." }
+        { "TargetingClosest", "El controlador {0} apunta al objetivo más cercano." },
+
+        { "PluginLoaded", "GDM Coop Plugin cargado" },
+        { "PluginAuthors", "Desarrollado por GD Seirya & Mithras Seirya" },
+        { "ControllerDisabled", "El controlador {0} está desactivado." },
+        { "InterfaceNull", "GDMModInterface es nulo. No se puede asignar el controlador." }
     };
 
     /// <summary>
