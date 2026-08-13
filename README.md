@@ -7,9 +7,11 @@ The goal of this project is to add cooperative gameplay features to Star Ocean 2
 ## Features
 
 Current features:
-- BepInEx plugin framework setup
-- Runtime testing tools
-- Multiplayer/cooperative player control
+- Multiplayer/cooperative player control 2-4 players
+- Localisation based on what game language text is set to
+- D-Pad to switch slots
+- Control simultaneously two characters
+- Switching between close targets and host target
 
 ## Requirements
 
@@ -227,9 +229,11 @@ You must own a legitimate copy of Star Ocean: The Second Story R to use this mod
 ## 機能
 
 現在の機能:
-- BepInEx プラグインフレームワークのセットアップ
-- ランタイムテストツール
-- マルチプレイ／協力プレイ用キャラクター操作
+- 2～4人でのマルチプレイヤー／協力プレイ
+- ゲーム内の設定言語に応じたローカライズ
+- Dパッドによるスロット切り替え
+- 2人のキャラクターを同時に操作
+- 近くのターゲットとホストのターゲットを切り替え
 
 ## 必要環境
 
