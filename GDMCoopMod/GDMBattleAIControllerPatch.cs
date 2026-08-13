@@ -157,17 +157,24 @@ public static class BattleAIControllerPatch
                 //Initialize Behaviors, overriding original
                 if (!AiInitTracker.Initialized.Contains(__instance))
                 {
-                    RemoveAllChildBehaviors(__instance.rootBehavior);
-                    //Required for actions to be had
-                    GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIPlayerBehavior();
-                    GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
-                    //Battle Null Behavior is set to player 1 at the start, this is to replicate what it does
-                    GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAINullBehavior();
-                    GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
-
-                    //Add to tracker so they don't re-initialize
+                    //Do not do it if control player index
+                    if (__instance.OwnerObject.indexInParty != BattleManager.GetInstance().ControlPlayerIndex)
+                    {
+                        RemoveAllChildBehaviors(__instance.rootBehavior);
+                        //Required for actions to be had
+                        GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIPlayerBehavior();
+                        GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
+                        //Battle Null Behavior is set to player 1 at the start, this is to replicate what it does
+                        GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAINullBehavior();
+                        GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
+                    }
                     AiInitTracker.Initialized.Add(__instance);
-
+                    //Add to tracker so they don't re-initialize
+                    if (__instance.OwnerObject.indexInParty == BattleManager.GetInstance().ControlPlayerIndex)
+                    {
+                        //Business as usual if you are control player index
+                        return true;
+                    }
                     //Don't allow the original init to run
                     return false;
                 }
@@ -211,7 +218,7 @@ public static class BattleAIControllerPatch
                         //Get the magnitude of the move stick
                         float magnitude = moveVector.magnitude;
                         //Deadzone of move stick, assumed to be 0.1f to give leeway for drifty sticks
-                        if (__instance.OwnerObject.BattleAIController.actionParameter.BattleSkillID == BattleSkillID.INVALID && magnitude >= 0.1f)
+                        if (magnitude >= 0.1f)
                         {
                             //Check if AI Controller exists
                             if (__instance.rootBehavior != null)
@@ -279,7 +286,6 @@ public static class BattleAIControllerPatch
                                         __instance.OwnerObject.GetCharacterController().OnNormalAttack(BattleManager.GetInstance().GetControlPlayerTarget());
                                     }
                                 }
-
 
                                 //Store original Tactics ID
                                 TacticsID originalId = __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID;

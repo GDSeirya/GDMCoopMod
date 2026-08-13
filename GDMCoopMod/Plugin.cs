@@ -6,7 +6,7 @@ using GDMCoopMod;
 using HarmonyLib;
 using UnityEngine;
 
-[BepInPlugin("gdm.coopmod", "GDM Coop Plugin", "1.5")]
+[BepInPlugin("gdm.coopmod", "GDM Coop Plugin", "1.5.1")]
 public class GDMCoopPlugin : BasePlugin
 {
     public static ManualLogSource StaticLog;
@@ -103,14 +103,14 @@ public class GDMCoopPlugin : BasePlugin
         // -1 means don't assign this controller.
         if (partyIndex < 0)
         {
-            OverlayHost.Init(LanguageManager.Get("ControllerDisabled", controllerIndex + 1), 5);
+            OverlayHost.Init(LanguageManager.Get("ControllerDisabled", controllerIndex + 1));
             return;
         }
 
         // Safety check.
         if (modInterface == null)
         {
-            OverlayHost.Init(LanguageManager.Get("InterfaceNull"), 5);
+            OverlayHost.Init(LanguageManager.Get("InterfaceNull"));
             return;
         }
         modInterface.AssignCharacterToController(partyIndex,controllerIndex);

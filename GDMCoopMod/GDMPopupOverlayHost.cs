@@ -5,7 +5,7 @@ public class GDMPopupOverlayHost : MonoBehaviour
 {
     private List<GDMPopupOverlay> gdmPopupOverlays = new List<GDMPopupOverlay>();
 
-    public void Init(string message, int duration = 10)
+    public void Init(string message, int duration = 5)
     {
         gdmPopupOverlays.Add(new GDMPopupOverlay(message, duration));
     }
