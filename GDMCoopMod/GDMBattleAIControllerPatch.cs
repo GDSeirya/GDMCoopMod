@@ -11,6 +11,34 @@ public static class BattleAIControllerPatch
     private static bool isPartyAiEnabled = false;
     private static bool[] useHostTarget = new bool[4] { true, true, true, true };
 
+    private struct BattleSkillState
+    {
+        public BattleSkillID SkillId;
+        public int SkillIndex;
+
+        public BattleSkillState(BattleSkillID skillId, int skillIndex)
+        {
+            SkillId = skillId;
+            SkillIndex = skillIndex;
+        }
+    }
+
+    private static BattleSkillState[] lastLeftBattleSkill = new BattleSkillState[4]
+    {
+    new BattleSkillState(BattleSkillID.INVALID, 0),
+    new BattleSkillState(BattleSkillID.INVALID, 0),
+    new BattleSkillState(BattleSkillID.INVALID, 0),
+    new BattleSkillState(BattleSkillID.INVALID, 0)
+    };
+
+    private static BattleSkillState[] lastRightBattleSkill = new BattleSkillState[4]
+    {
+    new BattleSkillState(BattleSkillID.INVALID, 0),
+    new BattleSkillState(BattleSkillID.INVALID, 0),
+    new BattleSkillState(BattleSkillID.INVALID, 0),
+    new BattleSkillState(BattleSkillID.INVALID, 0)
+    };
+
     public static void SetHostTargetingMode(int index, bool isEnabled)
     {
         if (index >= 0 && index <= 3)
@@ -347,6 +375,8 @@ public static class BattleAIControllerPatch
                             {
                                 __instance.OwnerObject.GetCharacterController().battleSkillRightIndex = 0;
                                 __instance.OwnerObject.GetCharacterController().normalAttackIndex = 0;
+                                lastLeftBattleSkill[__instance.OwnerObject.indexInParty].SkillIndex = 0;
+                                lastLeftBattleSkill[__instance.OwnerObject.indexInParty].SkillId = BattleSkillID.INVALID;
                                 __instance.OwnerObject.GetCharacterController().Reset();
                             }
 
@@ -362,6 +392,17 @@ public static class BattleAIControllerPatch
                             //Perform an attack request on target
                             //BattleCharacterActionResult actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill()
                             BattleSkillID skillId = __instance.OwnerObject.GetCharacterController().GetNextBattleSkillID(BattleDefine.RootType.Left);
+                            if (lastLeftBattleSkill[__instance.OwnerObject.indexInParty].SkillIndex == 1 &&
+                                __instance.OwnerObject.GetCharacterController().battleSkillLeftIndex == 0 &&
+                                skillId == BattleSkillID.INVALID)
+                            {
+                                __instance.OwnerObject.GetCharacterController().Reset();
+                                skillId = __instance.OwnerObject.GetCharacterController().GetNextBattleSkillID(BattleDefine.RootType.Left);
+                            }
+                            //Remember last skillIndex and Skill
+                            lastLeftBattleSkill[__instance.OwnerObject.indexInParty].SkillIndex = __instance.OwnerObject.GetCharacterController().battleSkillLeftIndex;
+                            lastLeftBattleSkill[__instance.OwnerObject.indexInParty].SkillId = skillId;
+
                             BattleCharacterActionResult actionResult = BattleCharacterActionResult.Invalid;
                             if (skillId != BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().reserveBattleSkillID == BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().battleSkillLeftIndex < 2 && !__instance.OwnerObject.GetCharacterController().IsLinkComboAction())
                             {
@@ -402,6 +443,8 @@ public static class BattleAIControllerPatch
                             {
                                 __instance.OwnerObject.GetCharacterController().battleSkillLeftIndex = 0;
                                 __instance.OwnerObject.GetCharacterController().normalAttackIndex = 0;
+                                lastRightBattleSkill[__instance.OwnerObject.indexInParty].SkillIndex = 0;
+                                lastRightBattleSkill[__instance.OwnerObject.indexInParty].SkillId = BattleSkillID.INVALID;
                                 __instance.OwnerObject.GetCharacterController().Reset();
                             }
                             TacticsID originalId = __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID;
@@ -410,11 +453,17 @@ public static class BattleAIControllerPatch
                             BattleCharacterActionResult actionResult = BattleCharacterActionResult.Invalid;
 
                             BattleSkillID skillId = __instance.OwnerObject.GetCharacterController().GetNextBattleSkillID(BattleDefine.RootType.Right);
+                            if (lastRightBattleSkill[__instance.OwnerObject.indexInParty].SkillIndex == 1 &&
+                                __instance.OwnerObject.GetCharacterController().battleSkillRightIndex == 0 &&
+                                skillId == BattleSkillID.INVALID)
+                            {
+                                __instance.OwnerObject.GetCharacterController().Reset();
+                                skillId = __instance.OwnerObject.GetCharacterController().GetNextBattleSkillID(BattleDefine.RootType.Right);
+                            }
+                            lastRightBattleSkill[__instance.OwnerObject.indexInParty].SkillIndex = __instance.OwnerObject.GetCharacterController().battleSkillRightIndex;
+                            lastRightBattleSkill[__instance.OwnerObject.indexInParty].SkillId = skillId;
                             if (skillId != BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().reserveBattleSkillID == BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().battleSkillRightIndex < 2 && !__instance.OwnerObject.GetCharacterController().IsLinkComboAction())
                             {
-                                //actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, BattleDefine.RootType.Right);
-
-
                                 BattleCharacter targetToCheck = __instance.OwnerObject.GetCharacterController().GetTargetOnAction(skillId);
                                 if (targetToCheck.IsPlayerSide() || useHostTarget[controllerIndex])
                                 {
