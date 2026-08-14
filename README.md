@@ -12,6 +12,7 @@ Current features:
 - D-Pad to switch slots
 - Control simultaneously two characters
 - Switching between close targets and host target
+- Spellcasters can use the right stick to switch Set Spells, and cast with the north button
 
 ## Requirements
 
@@ -234,6 +235,7 @@ You must own a legitimate copy of Star Ocean: The Second Story R to use this mod
 - Dパッドによるスロット切り替え
 - 2人のキャラクターを同時に操作
 - 近くのターゲットとホストのターゲットを切り替え
+- 術師のセット呪紋を右スティックで切り替え、北ボタンで使用可能
 
 ## 必要環境
 
