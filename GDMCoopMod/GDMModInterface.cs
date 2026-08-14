@@ -150,6 +150,16 @@ public class GDMModInterface : MonoBehaviour
 
         for (int i = 1; i < 4; i++)
         {
+            if (GDMCoopPlugin.VirtualControllers.GetState(i).SpellPreviousPressed)
+            {
+                BattleAIControllerPatch.PreviousSpell(i);
+            }
+
+            if (GDMCoopPlugin.VirtualControllers.GetState(i).SpellNextPressed)
+            {
+                BattleAIControllerPatch.NextSpell(i);
+            }
+
             if (GDMCoopPlugin.VirtualControllers.GetState(i).TargetingModePressed)
             {
                 BattleAIControllerPatch.SetHostTargetingMode(i, !BattleAIControllerPatch.GetHostTargetingMode(i));

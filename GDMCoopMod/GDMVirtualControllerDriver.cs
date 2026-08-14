@@ -108,7 +108,7 @@ namespace GDMCoopMod
                 {
                     ClearInputState(state);
 
-                    state.UpdateEvents();
+                    state.UpdateEvents(Time.deltaTime);
 
                     GDMCoopPlugin.VirtualControllers.SetState(
                         partyIndex,
@@ -120,6 +120,7 @@ namespace GDMCoopMod
 
                 // Movement
                 state.Move = pad.leftStick.ReadValue();
+                state.RightStick = pad.rightStick.ReadValue();
 
                 // Held states
                 state.AttackHeld = pad.buttonEast.isPressed;
@@ -134,9 +135,10 @@ namespace GDMCoopMod
                 state.ChangeToSlot4Held = pad.dpad.left.isPressed;
 
                 state.TargetingModeHeld = pad.leftTrigger.isPressed;
+                state.UseMagicHeld = pad.buttonNorth.isPressed;
 
                 // Calculate press/release events.
-                state.UpdateEvents();
+                state.UpdateEvents(Time.deltaTime);
 
                 GDMCoopPlugin.VirtualControllers.SetState(
                     partyIndex,
@@ -152,7 +154,7 @@ namespace GDMCoopMod
 
             ClearInputState(state);
 
-            state.UpdateEvents();
+            state.UpdateEvents(Time.deltaTime);
 
             GDMCoopPlugin.VirtualControllers.SetState(
                 partyIndex,
@@ -163,6 +165,7 @@ namespace GDMCoopMod
         private void ClearInputState(GDMVirtualControllerState state)
         {
             state.Move = Vector2.zero;
+            state.RightStick = Vector2.zero;
 
             state.AttackHeld = false;
             state.EvadeHeld = false;
@@ -176,6 +179,7 @@ namespace GDMCoopMod
             state.ChangeToSlot4Held = false;
 
             state.TargetingModeHeld = false;
+            state.UseMagicHeld = false;
         }
     }
 }

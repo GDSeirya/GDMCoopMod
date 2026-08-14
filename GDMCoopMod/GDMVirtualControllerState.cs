@@ -17,6 +17,7 @@ namespace GDMCoopMod
         public bool ChangeToSlot3Held; 
         public bool ChangeToSlot4Held;
         public bool TargetingModeHeld;
+        public bool UseMagicHeld;
 
         // PRESS events (onPress)
         public bool AttackPressed;
@@ -28,6 +29,7 @@ namespace GDMCoopMod
         public bool ChangeToSlot3Pressed;
         public bool ChangeToSlot4Pressed;
         public bool TargetingModePressed;
+        public bool UseMagicPressed;
 
         // RELEASE events (onRelease)
         public bool AttackReleased;
@@ -39,6 +41,7 @@ namespace GDMCoopMod
         public bool ChangeToSlot3Released;
         public bool ChangeToSlot4Released;
         public bool TargetingModeReleased;
+        public bool UseMagicReleased;
         
         // Previous frame states
         public bool PrevAttack;
@@ -50,9 +53,27 @@ namespace GDMCoopMod
         public bool PrevChangeToSlot3;
         public bool PrevChangeToSlot4;
         public bool PrevTargetingMode;
+        public bool PrevUseMagic;
 
-        public void UpdateEvents()
+        // Right stick (analog)
+        public Vector2 RightStick;
+
+        // Spell scrolling
+        public bool SpellPreviousPressed;
+        public bool SpellNextPressed;
+
+        // Right-stick scrolling state
+        private bool RightStickScrolling;
+        private float RightStickHoldTime;
+        private float RightStickRepeatTimer;
+        private int RightStickDirection;
+
+        public void UpdateEvents(float deltaTime)
         {
+            // Reset one-frame events.
+            SpellPreviousPressed = false;
+            SpellNextPressed = false;
+
             AttackPressed = AttackHeld && !PrevAttack;
             AttackReleased = !AttackHeld && PrevAttack;
 
@@ -80,6 +101,11 @@ namespace GDMCoopMod
             TargetingModePressed = TargetingModeHeld && !PrevTargetingMode;
             TargetingModeReleased = !TargetingModeHeld && PrevTargetingMode;
 
+            UseMagicPressed = UseMagicHeld && !PrevUseMagic;
+            UseMagicReleased = !UseMagicHeld && PrevUseMagic;
+
+            UpdateSpellScrolling(deltaTime);
+
             // Update previous frame states
             PrevAttack = AttackHeld;
             PrevEvade = EvadeHeld;
@@ -90,12 +116,14 @@ namespace GDMCoopMod
             PrevChangeToSlot3 = ChangeToSlot3Held;
             PrevChangeToSlot4 = ChangeToSlot4Held;
             PrevTargetingMode = TargetingModeHeld;
+            PrevUseMagic = UseMagicHeld;
         }
 
         public void Clear()
         {
             // Movement
             Move = Vector2.zero;
+            RightStick = Vector2.zero;
 
             // Held states
             AttackHeld = false;
@@ -107,6 +135,7 @@ namespace GDMCoopMod
             ChangeToSlot3Held = false;
             ChangeToSlot4Held = false;
             TargetingModeHeld = false;
+            UseMagicHeld = false;
 
             // Press events
             AttackPressed = false;
@@ -118,6 +147,7 @@ namespace GDMCoopMod
             ChangeToSlot3Pressed = false;
             ChangeToSlot4Pressed = false;
             TargetingModePressed = false;
+            UseMagicPressed = false;
 
             // Release events
             AttackReleased = false;
@@ -129,6 +159,7 @@ namespace GDMCoopMod
             ChangeToSlot3Released = false;
             ChangeToSlot4Released = false;
             TargetingModeReleased = false;
+            UseMagicReleased = false;
 
             // Previous frame states
             PrevAttack = false;
@@ -140,6 +171,99 @@ namespace GDMCoopMod
             PrevChangeToSlot3 = false;
             PrevChangeToSlot4 = false;
             PrevTargetingMode = false;
+            PrevUseMagic = false;
+
+            RightStickScrolling = false;
+            RightStickHoldTime = 0f;
+            RightStickRepeatTimer = 0f;
+            RightStickDirection = 0;
         }
+
+        private void UpdateSpellScrolling(float deltaTime)
+        {
+            const float flickThreshold = 0.7f;
+            const float resetThreshold = 0.3f;
+            const float holdDelay = 0.4f;
+
+            // Stick returned to center.
+            if (Mathf.Abs(RightStick.y) < resetThreshold)
+            {
+                RightStickScrolling = false;
+                RightStickHoldTime = 0f;
+                RightStickRepeatTimer = 0f;
+                RightStickDirection = 0;
+
+                return;
+            }
+
+            int direction = 0;
+
+            // Up = previous
+            if (RightStick.y > flickThreshold)
+                direction = -1;
+
+            // Down = next
+            else if (RightStick.y < -flickThreshold)
+                direction = 1;
+
+            if (direction == 0)
+                return;
+
+            // First flick.
+            if (!RightStickScrolling)
+            {
+                RightStickScrolling = true;
+                RightStickDirection = direction;
+                RightStickHoldTime = 0f;
+                RightStickRepeatTimer = 0f;
+
+                TriggerSpellScroll(direction);
+
+                return;
+            }
+
+            // Direction changed while the stick is still held.
+            if (RightStickDirection != direction)
+            {
+                RightStickDirection = direction;
+                RightStickHoldTime = 0f;
+                RightStickRepeatTimer = 0f;
+
+                TriggerSpellScroll(direction);
+
+                return;
+            }
+
+            RightStickHoldTime += deltaTime;
+
+            // Wait before starting automatic scrolling.
+            if (RightStickHoldTime < holdDelay)
+                return;
+
+            RightStickRepeatTimer -= deltaTime;
+
+            if (RightStickRepeatTimer > 0f)
+                return;
+
+            TriggerSpellScroll(direction);
+
+            // Gradually increase scrolling speed.
+            float repeatInterval = Mathf.Lerp(
+                0.15f,
+                0.07f,
+                Mathf.Clamp01((RightStickHoldTime - holdDelay) / 2f)
+            );
+
+            RightStickRepeatTimer = repeatInterval;
+        }
+
+        private void TriggerSpellScroll(int direction)
+        {
+            if (direction < 0)
+                SpellPreviousPressed = true;
+            else
+                SpellNextPressed = true;
+        }
+
     }
 }

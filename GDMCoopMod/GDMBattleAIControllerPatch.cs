@@ -2,6 +2,8 @@
 using HarmonyLib;
 using SimpleSpritePacker;
 using System.Collections.Generic;
+using System.Text;
+using UnityEngine;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
 
@@ -10,6 +12,112 @@ public static class BattleAIControllerPatch
 {
     private static bool isPartyAiEnabled = false;
     private static bool[] useHostTarget = new bool[4] { true, true, true, true };
+    private static int[] spellIndex = new int[4] { -1, -1, -1, -1 };
+    private static List<BattleSkillID>[] listOfCharacterSpells = new List<BattleSkillID>[4]
+    {
+        new List<BattleSkillID>(),
+        new List<BattleSkillID>(),
+        new List<BattleSkillID>(),
+        new List<BattleSkillID>()
+    };
+
+    /// <summary>
+    /// Modulos to the next spell slot
+    /// </summary>
+    public static void NextSpell(int characterIndex)
+    {
+        if (characterIndex < 0 || characterIndex >= spellIndex.Length)
+            return;
+
+        List<BattleSkillID> spells = listOfCharacterSpells[characterIndex];
+
+        if (spells == null || spells.Count == 0)
+        {
+            spellIndex[characterIndex] = -1;
+            return;
+        }
+
+        spellIndex[characterIndex] =
+            (spellIndex[characterIndex] + 1 + spells.Count) % spells.Count;
+    }
+
+    /// <summary>
+    /// Modulos to the previous spell slot
+    /// </summary>
+    public static void PreviousSpell(int characterIndex)
+    {
+        if (characterIndex < 0 || characterIndex >= spellIndex.Length)
+            return;
+
+        List<BattleSkillID> spells = listOfCharacterSpells[characterIndex];
+
+        if (spells == null || spells.Count == 0)
+        {
+            spellIndex[characterIndex] = -1;
+            return;
+        }
+
+        spellIndex[characterIndex] =
+            (spellIndex[characterIndex] - 1 + spells.Count) % spells.Count;
+    }
+
+    /// <summary>
+    /// Returns 4 selected spell index
+    /// </summary>
+    public static int[] GetSpellIndex()
+    {
+        return spellIndex;
+    }
+
+    public static void InitSpellCasterIndexes()
+    {
+        ClampAllSpellIndex();
+        for (int i = 0; i < 4; i++)
+        {
+            if (listOfCharacterSpells[i].Count > 0 && spellIndex[i] == -1)
+            {
+                spellIndex[i] = 0;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Returns 4 lists of BattleSkillIds
+    /// </summary>
+    public static List<BattleSkillID>[] GetListOfCharacterSpells()
+    {
+        return listOfCharacterSpells;
+    }
+
+    /// <summary>
+    /// Clamps all spell indexes
+    /// </summary>
+    public static void ClampAllSpellIndex()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            ClampSpellIndex(i);
+        }
+    }
+
+    /// <summary>
+    /// Clamps the selected skill if it exceeds the skill list
+    /// </summary>
+    public static void ClampSpellIndex(int characterIndex)
+    {
+        if (characterIndex >= 0 && characterIndex <= 3)
+        {
+            if (listOfCharacterSpells[characterIndex].Count == 0)
+            {
+                spellIndex[characterIndex] = -1;
+            }
+
+            if (spellIndex[characterIndex] >= listOfCharacterSpells[characterIndex].Count)
+            {
+                spellIndex[characterIndex] = listOfCharacterSpells[characterIndex].Count - 1;
+            }
+        }
+    }
 
     private struct BattleSkillState
     {
@@ -39,6 +147,9 @@ public static class BattleAIControllerPatch
     new BattleSkillState(BattleSkillID.INVALID, 0)
     };
 
+    /// <summary>
+    /// Sets the index controller to target host or not
+    /// </summary>
     public static void SetHostTargetingMode(int index, bool isEnabled)
     {
         if (index >= 0 && index <= 3)
@@ -47,6 +158,10 @@ public static class BattleAIControllerPatch
         }
     }
 
+
+    /// <summary>
+    /// Gets from memory if the index controller targets host or not
+    /// </summary>
     public static bool GetHostTargetingMode(int index)
     {
         if (index >= 0 && index <= 3)
@@ -185,6 +300,28 @@ public static class BattleAIControllerPatch
                 //Initialize Behaviors, overriding original
                 if (!AiInitTracker.Initialized.Contains(__instance))
                 {
+                    //Init special case for spellcasters
+                    listOfCharacterSpells[__instance.OwnerObject.indexInParty].Clear();
+                    if (        
+                        (PlayerID)__instance.OwnerObject.CharacterID == PlayerID.RENA ||
+                        (PlayerID)__instance.OwnerObject.CharacterID == PlayerID.CELINE ||
+                        (PlayerID)__instance.OwnerObject.CharacterID == PlayerID.LEON ||
+                        (PlayerID)__instance.OwnerObject.CharacterID == PlayerID.NOEL)
+                    {
+                        var casterBehavior = new BattleAISpellCasterBehavior();
+                        casterBehavior.Initialize(__instance.aiParameter);
+                        TacticsID originalId = __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID;
+                        casterBehavior.AIRun();
+                        __instance.OwnerObject.GetCharacterController().Reset();
+
+                        for (int i = 0; i < casterBehavior.battleSkillList.Count; i++)
+                        {
+                            listOfCharacterSpells[__instance.OwnerObject.indexInParty].Add(casterBehavior.battleSkillList[i].battleSkillID);
+                        }
+                        casterBehavior = null;
+                    }
+                    //Clamp spell index to number of assigned spells
+                    InitSpellCasterIndexes();
                     //Do not do it if control player index
                     if (__instance.OwnerObject.indexInParty != BattleManager.GetInstance().ControlPlayerIndex)
                     {
@@ -485,6 +622,49 @@ public static class BattleAIControllerPatch
                             __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID = originalId;
                         }
 
+                        //Spellcaster Button
+                        if (GDMCoopPlugin.VirtualControllers.GetState(controllerIndex).UseMagicPressed)
+                        {
+                            if (__instance.OwnerObject.GetCharacterController().GetCurrentState() == BattleCharacterState.Move)
+                            {
+                                if (__instance.OwnerObject.battleAIController.actionParameter.BattleSkillID == BattleSkillID.INVALID &&
+                                ((PlayerID)__instance.OwnerObject.CharacterID == PlayerID.RENA ||
+                                (PlayerID)__instance.OwnerObject.CharacterID == PlayerID.CELINE ||
+                                (PlayerID)__instance.OwnerObject.CharacterID == PlayerID.LEON ||
+                                (PlayerID)__instance.OwnerObject.CharacterID == PlayerID.NOEL))
+                                {
+                                    BattleCharacterActionResult actionResult = BattleCharacterActionResult.Invalid;
+                                    BattleSkillID skillId = BattleSkillID.INVALID;
+                                    if (listOfCharacterSpells[__instance.OwnerObject.indexInParty].Count > 0)
+                                    {
+                                        //Assign skill
+                                        skillId = listOfCharacterSpells[__instance.OwnerObject.indexInParty][spellIndex[__instance.OwnerObject.indexInParty]];
+                                    }
+
+                                    //Do skill like any other skill but without root define left or right
+                                    if (skillId != BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().reserveBattleSkillID == BattleSkillID.INVALID)
+                                    {
+                                        BattleCharacter targetToCheck = __instance.OwnerObject.GetCharacterController().GetTargetOnAction(skillId);
+                                        if (targetToCheck.IsPlayerSide() || useHostTarget[controllerIndex])
+                                        {
+                                            actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId);
+                                        }
+                                        else
+                                        {
+                                            BattleEnemy closestEnemy = GetClosestEnemy(__instance.OwnerObject);
+                                            if (closestEnemy != null)
+                                            {
+                                                actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, closestEnemy);
+                                            }
+                                            else
+                                            {
+                                                actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         //If stepping, set state to false so that you don't move forward automatically and AI can move
                         if (__instance.enableAIMove == true && __instance.OwnerObject.GetCharacterController().currentState == 9 && __instance.enableAIMove)
                         {

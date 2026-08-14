@@ -1,5 +1,6 @@
 ﻿#if DEBUG
 using Game;
+using SimpleSpritePacker;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +34,13 @@ namespace GDMCoopMod
                     {
                         GUI.Label(
                         new Rect(startX, startY + (i * rowHeight), 1000, rowHeight),
-                        $"Player [{(PlayerID)battlePlayer.CharacterID}], controllingId {BattleManager.GetInstance().controlPlayerIndex}, indexInParty {battlePlayer.indexInParty}",
+                        $"[BATTLESTATE [{(PlayerID)battlePlayer.CharacterID}]]" +
+                        $"[Player [{(PlayerID)battlePlayer.CharacterID}]]" +
+                        //$"controllingId {BattleManager.GetInstance().controlPlayerIndex}, " +
+                        //$"indexInParty {battlePlayer.indexInParty}, " +
+                        $"[charState {battlePlayer.GetCharacterController().GetCurrentState()}]" +
+                        $"[battleSkillId {battlePlayer.battleAIController.actionParameter.BattleSkillID}]" +
+                        $"[reserveSkill {battlePlayer.GetCharacterController().reserveBattleSkillID}]",
                         style
                     );
                     }
