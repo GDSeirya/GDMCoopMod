@@ -1,6 +1,8 @@
 ﻿using Game;
+using GDMCoopMod;
 using HarmonyLib;
 using SimpleSpritePacker;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -24,61 +26,41 @@ public static class BattleAIControllerPatch
     /// <summary>
     /// Modulos to the next spell slot
     /// </summary>
-    public static void NextSpell(int characterIndex)
+    public static void NextSpell(int partyIndex)
     {
-        if (characterIndex < 0 || characterIndex >= spellIndex.Length)
+        if (partyIndex < 0 || partyIndex >= spellIndex.Length)
             return;
 
-        List<BattleSkillID> spells = listOfCharacterSpells[characterIndex];
+        List<BattleSkillID> spells = listOfCharacterSpells[partyIndex];
 
         if (spells == null || spells.Count == 0)
         {
-            spellIndex[characterIndex] = -1;
+            spellIndex[partyIndex] = -1;
             return;
         }
 
-        spellIndex[characterIndex] =
-            (spellIndex[characterIndex] + 1 + spells.Count) % spells.Count;
+        spellIndex[partyIndex] =
+            (spellIndex[partyIndex] + 1 + spells.Count) % spells.Count;
     }
 
     /// <summary>
     /// Modulos to the previous spell slot
     /// </summary>
-    public static void PreviousSpell(int characterIndex)
+    public static void PreviousSpell(int partyIndex)
     {
-        if (characterIndex < 0 || characterIndex >= spellIndex.Length)
+        if (partyIndex < 0 || partyIndex >= spellIndex.Length)
             return;
 
-        List<BattleSkillID> spells = listOfCharacterSpells[characterIndex];
+        List<BattleSkillID> spells = listOfCharacterSpells[partyIndex];
 
         if (spells == null || spells.Count == 0)
         {
-            spellIndex[characterIndex] = -1;
+            spellIndex[partyIndex] = -1;
             return;
         }
 
-        spellIndex[characterIndex] =
-            (spellIndex[characterIndex] - 1 + spells.Count) % spells.Count;
-    }
-
-    /// <summary>
-    /// Returns 4 selected spell index
-    /// </summary>
-    public static int[] GetSpellIndex()
-    {
-        return spellIndex;
-    }
-
-    public static void InitSpellCasterIndexes()
-    {
-        ClampAllSpellIndex();
-        for (int i = 0; i < 4; i++)
-        {
-            if (listOfCharacterSpells[i].Count > 0 && spellIndex[i] == -1)
-            {
-                spellIndex[i] = 0;
-            }
-        }
+        spellIndex[partyIndex] =
+            (spellIndex[partyIndex] - 1 + spells.Count) % spells.Count;
     }
 
     /// <summary>
@@ -90,21 +72,11 @@ public static class BattleAIControllerPatch
     }
 
     /// <summary>
-    /// Clamps all spell indexes
-    /// </summary>
-    public static void ClampAllSpellIndex()
-    {
-        for (int i = 0; i < 4; i++)
-        {
-            ClampSpellIndex(i);
-        }
-    }
-
-    /// <summary>
     /// Clamps the selected skill if it exceeds the skill list
     /// </summary>
-    public static void ClampSpellIndex(int characterIndex)
+    public static void ClampSpellIndex(int partyIndex)
     {
+        int characterIndex = GDMControllerRouting.GetControllerForParty(partyIndex);
         if (characterIndex >= 0 && characterIndex <= 3)
         {
             if (listOfCharacterSpells[characterIndex].Count == 0)
@@ -242,6 +214,14 @@ public static class BattleAIControllerPatch
     }
 
     /// <summary>
+    /// Returns 4 selected spell index
+    /// </summary>
+    public static int[] GetSpellIndex()
+    {
+        return spellIndex;
+    }
+
+    /// <summary>
     /// Clears a list of hashes of detected BattleCharacters, will initialize battle ai controller again when AI is disabled.
     /// </summary>
     public static void ClearInit()
@@ -308,6 +288,7 @@ public static class BattleAIControllerPatch
                         (PlayerID)__instance.OwnerObject.CharacterID == PlayerID.LEON ||
                         (PlayerID)__instance.OwnerObject.CharacterID == PlayerID.NOEL)
                     {
+                        
                         var casterBehavior = new BattleAISpellCasterBehavior();
                         casterBehavior.Initialize(__instance.aiParameter);
                         TacticsID originalId = __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID;
@@ -318,10 +299,17 @@ public static class BattleAIControllerPatch
                         {
                             listOfCharacterSpells[__instance.OwnerObject.indexInParty].Add(casterBehavior.battleSkillList[i].battleSkillID);
                         }
+                        if (listOfCharacterSpells[__instance.OwnerObject.indexInParty].Count > 0)
+                        {
+                            if (spellIndex[__instance.OwnerObject.indexInParty] == -1)
+                            {
+                                spellIndex[__instance.OwnerObject.indexInParty] = 0;
+                            }
+                            //Clamp spell index so it's not out of bounds
+                            ClampSpellIndex(__instance.OwnerObject.indexInParty);
+                        }
                         casterBehavior = null;
                     }
-                    //Clamp spell index to number of assigned spells
-                    InitSpellCasterIndexes();
                     //Do not do it if control player index
                     if (__instance.OwnerObject.indexInParty != BattleManager.GetInstance().ControlPlayerIndex)
                     {

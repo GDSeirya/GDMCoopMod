@@ -152,12 +152,24 @@ public class GDMModInterface : MonoBehaviour
         {
             if (GDMCoopPlugin.VirtualControllers.GetState(i).SpellPreviousPressed)
             {
-                BattleAIControllerPatch.PreviousSpell(i);
+                for (int j = 0; j < 4; j++)
+                {
+                    if (GDMControllerRouting.GetControllerForParty(j) == i)
+                    {
+                        BattleAIControllerPatch.PreviousSpell(j);
+                    }
+                }
             }
 
             if (GDMCoopPlugin.VirtualControllers.GetState(i).SpellNextPressed)
             {
-                BattleAIControllerPatch.NextSpell(i);
+                for (int j = 0; j < 4; j++)
+                {
+                    if (GDMControllerRouting.GetControllerForParty(j) == i)
+                    {
+                        BattleAIControllerPatch.NextSpell(j);
+                    }
+                }
             }
 
             if (GDMCoopPlugin.VirtualControllers.GetState(i).TargetingModePressed)

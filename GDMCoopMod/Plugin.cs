@@ -6,7 +6,7 @@ using GDMCoopMod;
 using HarmonyLib;
 using UnityEngine;
 
-[BepInPlugin("gdm.coopmod", "GDM Coop Plugin", "1.6")]
+[BepInPlugin("gdm.coopmod", "GDM Coop Plugin", "1.6.1")]
 public class GDMCoopPlugin : BasePlugin
 {
     public static ManualLogSource StaticLog;
@@ -93,7 +93,7 @@ public class GDMCoopPlugin : BasePlugin
         AssignConfiguredController(3,player4Character.Value);
 
 
-        StaticLog.LogInfo("GDM Coop Plugin loaded v1.6");
+        StaticLog.LogInfo("GDM Coop Plugin loaded v1.6.1");
     }
 
 

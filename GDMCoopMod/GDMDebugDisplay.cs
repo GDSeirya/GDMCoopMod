@@ -32,6 +32,7 @@ namespace GDMCoopMod
                     BattlePlayer battlePlayer = BattleManager.GetInstance().battlePlayerList[i];
                     if (battlePlayer != null)
                     {
+                        
                         GUI.Label(
                         new Rect(startX, startY + (i * rowHeight), 1000, rowHeight),
                         $"[BATTLESTATE [{(PlayerID)battlePlayer.CharacterID}]]" +
