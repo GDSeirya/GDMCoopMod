@@ -384,6 +384,12 @@ public static class BattleAIControllerPatch
                         if (isRightSkillActive[__instance.OwnerObject.indexInParty]) isRightSkillActive[__instance.OwnerObject.indexInParty] = false;
 
                     }
+                    //Diable inputs if you are dead
+                    if (__instance.OwnerObject.GetCharacterController().GetCurrentState() == BattleCharacterState.Dead ||
+                        __instance.OwnerObject.GetCharacterController().GetCurrentState() == BattleCharacterState.Incapacitated)
+                    {
+                        return false;
+                    }
                     //Init Variables
                     BattleCharacterController battleCharController = __instance.OwnerObject.GetCharacterController();
 
@@ -555,11 +561,13 @@ public static class BattleAIControllerPatch
                             lastLeftBattleSkill[__instance.OwnerObject.indexInParty].SkillId = skillId;
 
                             BattleCharacterActionResult actionResult = BattleCharacterActionResult.Invalid;
-                            
+                            //Check if can proceed to skill
                             if (skillId != BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().reserveBattleSkillID == BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().battleSkillLeftIndex < 2 && !__instance.OwnerObject.GetCharacterController().IsLinkComboAction())
                             {
+                                //Check if have MP
                                 if (__instance.OwnerObject.battleCharacterParameter.CanUseBattleSkill(skillId))
                                 {
+                                    //Targeting Logic
                                     BattleCharacter targetToCheck = __instance.OwnerObject.GetCharacterController().GetTargetOnAction(skillId);
                                     if (targetToCheck.IsPlayerSide() || useHostTarget[controllerIndex])
                                     {
@@ -578,7 +586,11 @@ public static class BattleAIControllerPatch
                                         }
                                     }
                                 }
-                                
+                                else
+                                {
+                                    //Play buzzer if no MP
+                                    GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.ActionBuzzer);
+                                }
                             }
                             //Return original tactics to AI to prevent strategy menu from being bad
                             __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID = originalId;
@@ -641,6 +653,10 @@ public static class BattleAIControllerPatch
                                         }
                                     }
                                 }
+                                else
+                                {
+                                    GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.ActionBuzzer);
+                                }
                                 
                             }
                             __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID = originalId;
@@ -668,22 +684,29 @@ public static class BattleAIControllerPatch
                                     //Do skill like any other skill but without root define left or right
                                     if (skillId != BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().reserveBattleSkillID == BattleSkillID.INVALID)
                                     {
-                                        BattleCharacter targetToCheck = __instance.OwnerObject.GetCharacterController().GetTargetOnAction(skillId);
-                                        if (targetToCheck.IsPlayerSide() || useHostTarget[controllerIndex])
+                                        if (__instance.OwnerObject.battleCharacterParameter.CanUseBattleSkill(skillId))
                                         {
-                                            actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId);
-                                        }
-                                        else
-                                        {
-                                            BattleEnemy closestEnemy = GetClosestEnemy(__instance.OwnerObject);
-                                            if (closestEnemy != null)
-                                            {
-                                                actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, closestEnemy);
-                                            }
-                                            else
+                                            BattleCharacter targetToCheck = __instance.OwnerObject.GetCharacterController().GetTargetOnAction(skillId);
+                                            if (targetToCheck.IsPlayerSide() || useHostTarget[controllerIndex])
                                             {
                                                 actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId);
                                             }
+                                            else
+                                            {
+                                                BattleEnemy closestEnemy = GetClosestEnemy(__instance.OwnerObject);
+                                                if (closestEnemy != null)
+                                                {
+                                                    actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, closestEnemy);
+                                                }
+                                                else
+                                                {
+                                                    actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId);
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.ActionBuzzer);
                                         }
                                     }
                                 }
