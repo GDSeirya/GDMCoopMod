@@ -1,4 +1,5 @@
-﻿using Game;
+﻿using Common;
+using Game;
 using GDMCoopMod;
 using HarmonyLib;
 using SimpleSpritePacker;
@@ -22,6 +23,8 @@ public static class BattleAIControllerPatch
         new List<BattleSkillID>(),
         new List<BattleSkillID>()
     };
+    private static bool[] isRightSkillActive = new bool[4] { false, false, false, false };
+    private static bool[] isLeftSkillActive = new bool[4] { false, false, false, false };
 
     /// <summary>
     /// Modulos to the next spell slot
@@ -91,7 +94,7 @@ public static class BattleAIControllerPatch
         }
     }
 
-    private struct BattleSkillState
+    public struct BattleSkillState
     {
         public BattleSkillID SkillId;
         public int SkillIndex;
@@ -101,6 +104,21 @@ public static class BattleAIControllerPatch
             SkillId = skillId;
             SkillIndex = skillIndex;
         }
+    }
+
+    public static BattleSkillState GetLastBattleSkill(BattleDefine.RootType rootType, int partyIndex)
+    {
+        if (partyIndex >= 0 && partyIndex <= 3)
+        {
+            switch (rootType)
+            {
+                case BattleDefine.RootType.Left:
+                    return lastLeftBattleSkill[partyIndex];
+                case BattleDefine.RootType.Right:
+                    return lastRightBattleSkill[partyIndex];
+            }
+        }
+        return new BattleSkillState();
     }
 
     private static BattleSkillState[] lastLeftBattleSkill = new BattleSkillState[4]
@@ -321,6 +339,9 @@ public static class BattleAIControllerPatch
                         GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAINullBehavior();
                         GetDeepestBehavior(__instance.rootBehavior).Initialize(__instance.aiParameter);
                     }
+                    if (isLeftSkillActive[__instance.OwnerObject.IndexInParty]) isLeftSkillActive[__instance.OwnerObject.IndexInParty] = false;
+                    if (isRightSkillActive[__instance.OwnerObject.IndexInParty]) isRightSkillActive[__instance.OwnerObject.IndexInParty] = false;
+
                     AiInitTracker.Initialized.Add(__instance);
                     //Add to tracker so they don't re-initialize
                     if (__instance.OwnerObject.indexInParty == BattleManager.GetInstance().ControlPlayerIndex)
@@ -359,6 +380,9 @@ public static class BattleAIControllerPatch
                         if (__instance.OwnerObject.GetCharacterController().battleSkillLeftIndex != 0) __instance.OwnerObject.GetCharacterController().battleSkillLeftIndex = 0;
                         if (__instance.OwnerObject.GetCharacterController().battleSkillRightIndex != 0) __instance.OwnerObject.GetCharacterController().battleSkillRightIndex = 0;
                         if (__instance.OwnerObject.GetCharacterController().normalAttackIndex != 0) __instance.OwnerObject.GetCharacterController().normalAttackIndex = 0;
+                        if (isLeftSkillActive[__instance.OwnerObject.indexInParty]) isLeftSkillActive[__instance.OwnerObject.indexInParty] = false;
+                        if (isRightSkillActive[__instance.OwnerObject.indexInParty]) isRightSkillActive[__instance.OwnerObject.indexInParty] = false;
+
                     }
                     //Init Variables
                     BattleCharacterController battleCharController = __instance.OwnerObject.GetCharacterController();
@@ -483,11 +507,13 @@ public static class BattleAIControllerPatch
                                 battleCharController.OnStepAvoid();
                             }
                         }
-
+                        
                         //Left Skill Logic
-                        if (GDMCoopPlugin.VirtualControllers.GetState(controllerIndex).LeftSkillPressed)
+                        if (GDMCoopPlugin.VirtualControllers.GetState(controllerIndex).LeftSkillPressed && !isRightSkillActive[__instance.OwnerObject.indexInParty])
                         {
-                            if (GetDeepestBehavior(__instance.rootBehavior).ToString() == "Game.BattleAINullBehavior")
+                            if (!isLeftSkillActive[__instance.OwnerObject.indexInParty]) isLeftSkillActive[__instance.OwnerObject.indexInParty] = true;
+                            
+                            if (GetDeepestBehavior(__instance.rootBehavior).ToString() == "Game.BattleAINullBehavior" || __instance.OwnerObject.GetCharacterController().GetCurrentState() == BattleCharacterState.Move)
                             {
                                 RemoveAllChildBehaviors(__instance.rootBehavior);
                                 GetDeepestBehavior(__instance.rootBehavior).childBehavior = new BattleAIPlayerBehavior();
@@ -529,33 +555,39 @@ public static class BattleAIControllerPatch
                             lastLeftBattleSkill[__instance.OwnerObject.indexInParty].SkillId = skillId;
 
                             BattleCharacterActionResult actionResult = BattleCharacterActionResult.Invalid;
+                            
                             if (skillId != BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().reserveBattleSkillID == BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().battleSkillLeftIndex < 2 && !__instance.OwnerObject.GetCharacterController().IsLinkComboAction())
                             {
-                                BattleCharacter targetToCheck = __instance.OwnerObject.GetCharacterController().GetTargetOnAction(skillId);
-                                if (targetToCheck.IsPlayerSide() || useHostTarget[controllerIndex])
+                                if (__instance.OwnerObject.battleCharacterParameter.CanUseBattleSkill(skillId))
                                 {
-                                    actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, BattleDefine.RootType.Left);
-                                }
-                                else
-                                {
-                                    BattleEnemy closestEnemy = GetClosestEnemy(__instance.OwnerObject);
-                                    if (closestEnemy != null)
-                                    {
-                                        actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, closestEnemy, BattleDefine.RootType.Left);
-                                    }
-                                    else
+                                    BattleCharacter targetToCheck = __instance.OwnerObject.GetCharacterController().GetTargetOnAction(skillId);
+                                    if (targetToCheck.IsPlayerSide() || useHostTarget[controllerIndex])
                                     {
                                         actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, BattleDefine.RootType.Left);
                                     }
+                                    else
+                                    {
+                                        BattleEnemy closestEnemy = GetClosestEnemy(__instance.OwnerObject);
+                                        if (closestEnemy != null)
+                                        {
+                                            actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, closestEnemy, BattleDefine.RootType.Left);
+                                        }
+                                        else
+                                        {
+                                            actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, BattleDefine.RootType.Left);
+                                        }
+                                    }
                                 }
+                                
                             }
                             //Return original tactics to AI to prevent strategy menu from being bad
                             __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID = originalId;
                         }
 
                         //Right Skill Logic
-                        if (GDMCoopPlugin.VirtualControllers.GetState(controllerIndex).RightSkillPressed)
+                        if (GDMCoopPlugin.VirtualControllers.GetState(controllerIndex).RightSkillPressed && !isLeftSkillActive[__instance.OwnerObject.indexInParty])
                         {
+                            if (!isRightSkillActive[__instance.OwnerObject.indexInParty]) isRightSkillActive[__instance.OwnerObject.indexInParty] = true;
                             if (GetDeepestBehavior(__instance.rootBehavior).ToString() == "Game.BattleAINullBehavior")
                             {
                                 RemoveAllChildBehaviors(__instance.rootBehavior);
@@ -589,23 +621,27 @@ public static class BattleAIControllerPatch
                             lastRightBattleSkill[__instance.OwnerObject.indexInParty].SkillId = skillId;
                             if (skillId != BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().reserveBattleSkillID == BattleSkillID.INVALID && __instance.OwnerObject.GetCharacterController().battleSkillRightIndex < 2 && !__instance.OwnerObject.GetCharacterController().IsLinkComboAction())
                             {
-                                BattleCharacter targetToCheck = __instance.OwnerObject.GetCharacterController().GetTargetOnAction(skillId);
-                                if (targetToCheck.IsPlayerSide() || useHostTarget[controllerIndex])
+                                if (__instance.OwnerObject.battleCharacterParameter.CanUseBattleSkill(skillId))
                                 {
-                                    actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, BattleDefine.RootType.Right);
-                                }
-                                else
-                                {
-                                    BattleEnemy closestEnemy = GetClosestEnemy(__instance.OwnerObject);
-                                    if (closestEnemy != null)
-                                    {
-                                        actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, closestEnemy, BattleDefine.RootType.Right);
-                                    }
-                                    else
+                                    BattleCharacter targetToCheck = __instance.OwnerObject.GetCharacterController().GetTargetOnAction(skillId);
+                                    if (targetToCheck.IsPlayerSide() || useHostTarget[controllerIndex])
                                     {
                                         actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, BattleDefine.RootType.Right);
                                     }
+                                    else
+                                    {
+                                        BattleEnemy closestEnemy = GetClosestEnemy(__instance.OwnerObject);
+                                        if (closestEnemy != null)
+                                        {
+                                            actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, closestEnemy, BattleDefine.RootType.Right);
+                                        }
+                                        else
+                                        {
+                                            actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, BattleDefine.RootType.Right);
+                                        }
+                                    }
                                 }
+                                
                             }
                             __instance.OwnerObject.battleCharacterParameter.characterParameter.TacticsID = originalId;
                         }
