@@ -34,15 +34,12 @@ public class GDMModInterface : MonoBehaviour
     public void AssignCharacterToController(int selectedPartyIndex, int selectedControllerIndex)
     {
         GDMControllerRouting.AssignController(selectedPartyIndex, selectedControllerIndex);
-        //GDMCoopPlugin.OverlayHost.Init($"Controller {selectedControllerIndex + 1} is now assigned to character {selectedPartyIndex + 1}.");
         GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("ControllerAssigned", selectedControllerIndex + 1, selectedPartyIndex + 1));
-        //ControllerAssigned
     }
 
     public void UnassignSelectedCharacter(int selectedPartyIndex)
     {
         GDMControllerRouting.UnassignCharacter(selectedPartyIndex);
-        //GDMCoopPlugin.OverlayHost.Init($"Character {selectedPartyIndex + 1} is now unassigned.");
         GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("CharacterUnassigned", selectedPartyIndex + 1));
     }
 
@@ -53,14 +50,14 @@ public class GDMModInterface : MonoBehaviour
             if (!BattleAIControllerPatch.IsPartyAIEnabled())
             {
                 BattleAIControllerPatch.SetOtherPlayerAI(true);
-                //GDMCoopPlugin.OverlayHost.Init("Party AI enabled.", 5);
                 GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("PartyAIEnabled"), 5);
+                GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuSelect);
             }
             else
             {
                 BattleAIControllerPatch.SetOtherPlayerAI(false);
-                //GDMCoopPlugin.OverlayHost.Init("Party AI disabled.", 5);
                 GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("PartyAIDisabled"), 5);
+                GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuSelect);
             }
         }
 
@@ -72,14 +69,14 @@ public class GDMModInterface : MonoBehaviour
             else if (f4Key.IsDown()) controllerIndexToAssign = 3;
             else if (f6Key.IsDown())
             {
-                //GDMCoopPlugin.OverlayHost.Init($"Select a controller first to clear.");
                 GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("SelectControllerFirst"));
+                GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuSelect);
             }
             if (f1Key.IsDown() || f2Key.IsDown() || f3Key.IsDown() || f4Key.IsDown())
             {
                 isSelectingCharacter = true;
-                //GDMCoopPlugin.OverlayHost.Init($"Selected controller {controllerIndexToAssign+1}.");
                 GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("SelectedController", controllerIndexToAssign + 1));
+                GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuSelect);
             }
         }
         else
@@ -96,10 +93,12 @@ public class GDMModInterface : MonoBehaviour
                 if (partyIndexToAssign >= 0 && partyIndexToAssign <= 3)
                 {
                     AssignCharacterToController(partyIndexToAssign, controllerIndexToAssign);
+                    GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuSelect);
                 }
                 else
                 {
                     UnassignSelectedCharacter(controllerIndexToAssign);
+                    GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuClose);
                 }
                 
             }
@@ -113,6 +112,7 @@ public class GDMModInterface : MonoBehaviour
                 if (selectedController != -1)
                 {
                     UnassignSelectedCharacter(i);
+                    GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuClose);
                 }
             }
         }
@@ -146,13 +146,10 @@ public class GDMModInterface : MonoBehaviour
                 int selectedController = GDMControllerRouting.GetControllerForParty(i);
                 if (selectedController != -1)
                 {
-                    //sb.AppendLine($"Character {i + 1} is assigned to controller {selectedController + 1}.");
                     sb.AppendLine(LanguageManager.Get("CharacterAssignedToController", i + 1, selectedController + 1));
                 }
                 else
                 {
-
-                    //sb.AppendLine($"Character {i + 1} is not assigned to any controllers.");
                     sb.AppendLine(LanguageManager.Get("CharacterNotAssigned", i + 1));
                 }
             }
@@ -165,11 +162,12 @@ public class GDMModInterface : MonoBehaviour
                     sb.Length -= nl.Length;
                 }
                 GDMCoopPlugin.OverlayHost.Init(sb.ToString());
+                GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuOpen);
             }
             else
             {
-                //GDMCoopPlugin.OverlayHost.Init($"No controllers detected.");
                 GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("NoControllersDetected"));
+                GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuSelect);
             }
         }
 
@@ -204,11 +202,13 @@ public class GDMModInterface : MonoBehaviour
                 {
                     //GDMCoopPlugin.OverlayHost.Init($"Controller {i+1} is targeting host's target.");
                     GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("TargetingHost", i+1));
+                    GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuSelect);
                 }
                 else
                 {
                     //GDMCoopPlugin.OverlayHost.Init($"Controller {i+1} is targeting their closest target.");
                     GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("TargetingClosest", i + 1));
+                    GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuSelect);
                 }
 
             }
@@ -218,6 +218,7 @@ public class GDMModInterface : MonoBehaviour
                 {
                     // Already assigned to this character: toggle off.
                     UnassignSelectedCharacter(0);
+                    GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuSelect);
                 }
                 else
                 {
@@ -227,6 +228,7 @@ public class GDMModInterface : MonoBehaviour
                     if (GDMControllerRouting.GetControllerForParty(3) == i) UnassignSelectedCharacter(3);
                     // Now assign it to the requested character.
                     AssignCharacterToController(0, i);
+                    GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuSelect);
                 }
             }
             else if (GDMCoopPlugin.VirtualControllers.GetState(i).ChangeToSlot2Pressed)
@@ -234,6 +236,7 @@ public class GDMModInterface : MonoBehaviour
                 if (GDMControllerRouting.GetControllerForParty(1) == i)
                 {
                     UnassignSelectedCharacter(1);
+                    GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuSelect);
                 }
                 else
                 {
@@ -241,6 +244,7 @@ public class GDMModInterface : MonoBehaviour
                     if (GDMControllerRouting.GetControllerForParty(2) == i) UnassignSelectedCharacter(2);
                     if (GDMControllerRouting.GetControllerForParty(3) == i) UnassignSelectedCharacter(3);
                     AssignCharacterToController(1, i);
+                    GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuSelect);
                 }
             }
             else if (GDMCoopPlugin.VirtualControllers.GetState(i).ChangeToSlot3Pressed)
@@ -248,6 +252,7 @@ public class GDMModInterface : MonoBehaviour
                 if (GDMControllerRouting.GetControllerForParty(2) == i)
                 {
                     UnassignSelectedCharacter(2);
+                    GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuSelect);
                 }
                 else
                 {
@@ -255,6 +260,7 @@ public class GDMModInterface : MonoBehaviour
                     if (GDMControllerRouting.GetControllerForParty(1) == i) UnassignSelectedCharacter(1);
                     if (GDMControllerRouting.GetControllerForParty(3) == i) UnassignSelectedCharacter(3);
                     AssignCharacterToController(2, i);
+                    GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuSelect);
                 }
             }
             else if (GDMCoopPlugin.VirtualControllers.GetState(i).ChangeToSlot4Pressed)
@@ -262,6 +268,7 @@ public class GDMModInterface : MonoBehaviour
                 if (GDMControllerRouting.GetControllerForParty(3) == i)
                 {
                     UnassignSelectedCharacter(3);
+                    GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuSelect);
                 }
                 else
                 {
@@ -269,6 +276,7 @@ public class GDMModInterface : MonoBehaviour
                     if (GDMControllerRouting.GetControllerForParty(1) == i) UnassignSelectedCharacter(1);
                     if (GDMControllerRouting.GetControllerForParty(2) == i) UnassignSelectedCharacter(2);
                     AssignCharacterToController(3, i);
+                    GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuSelect);
                 }
             }
         }
