@@ -1,9 +1,12 @@
 ﻿using BepInEx.Unity.IL2CPP.Configuration;
+using Common;
+using Game;
+using GDMCoopMod;
+using Il2CppSystem.Collections.Generic;
+using SimpleSpritePacker;
 using System;
 using System.Text;
 using UnityEngine;
-using GDMCoopMod;
-using Game;
 
 public class GDMModInterface : MonoBehaviour
 {
@@ -16,6 +19,7 @@ public class GDMModInterface : MonoBehaviour
     private KeyboardShortcut f7Key = new KeyboardShortcut(KeyCode.F7); //Unassign all Key
 #if DEBUG
     private KeyboardShortcut f8Key = new KeyboardShortcut(KeyCode.F8); //Debug Key
+    private bool debugFlag = false;
     public static int debugCounter = 0;
 #endif
     private bool isSelectingCharacter;
@@ -119,23 +123,16 @@ public class GDMModInterface : MonoBehaviour
 #if DEBUG
         if (f8Key.IsDown())
         {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < GameSoundManager.playSeList.Count; i++)
+            if (!debugFlag)
             {
-                sb.AppendLine(GameSoundManager.playSeList[i].name);
-            }
-            GDMCoopPlugin.StaticLog.LogInfo("Debug key pressed.");
-            GDMCoopPlugin.StaticLog.LogInfo(sb.ToString());
-            
-            GDMSoundRegistry.PlaySe((GDMSoundRegistry.ModSfx)debugCounter);
-            if (debugCounter == 8)
-            {
-                debugCounter = 0;
+                GDMCoopPlugin.OverlayHost.Init("Coop Camera On");
             }
             else
             {
-                debugCounter++;
+                BattleManager.GetInstance().EndCameraTargetSelect(true);
+                GDMCoopPlugin.OverlayHost.Init("Coop Camera Off");
             }
+            debugFlag = !debugFlag;
         }
 #endif
         if (f5Key.IsDown())
