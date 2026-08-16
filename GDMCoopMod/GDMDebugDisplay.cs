@@ -1,11 +1,6 @@
 ﻿#if DEBUG
 using Game;
-using SimpleSpritePacker;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace GDMCoopMod

@@ -1,23 +1,58 @@
 ﻿using Game;
 using GDMCoopMod;
 using Il2CppSystem.Collections.Generic;
-using System;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 public class GDMCooperativeCamera : MonoBehaviour
 {
+    private float previousBattleTimer = -1f;
+    private int frozenBattleTimerFrames = 0;
+
     public enum CameraState
     {
         NotInBattle,
+        NotPlayable,
+        IsPaused,
         IsDirecting,
         SoloMode,
         CoopMode
     }
 
     private static CameraState state;
+
+    private bool IsBattleTimerFrozen()
+    {
+        BattleManager battleManager = BattleManager.GetInstance();
+
+        if (battleManager == null)
+        {
+            previousBattleTimer = -1f;
+            frozenBattleTimerFrames = 0;
+            return false;
+        }
+
+        float currentBattleTimer = battleManager.battleTime;
+
+        if (previousBattleTimer < 0f)
+        {
+            previousBattleTimer = currentBattleTimer;
+            frozenBattleTimerFrames = 0;
+            return false;
+        }
+
+        if (Mathf.Approximately(currentBattleTimer, previousBattleTimer))
+        {
+            frozenBattleTimerFrames++;
+        }
+        else
+        {
+            frozenBattleTimerFrames = 0;
+        }
+
+        previousBattleTimer = currentBattleTimer;
+
+        return frozenBattleTimerFrames >= 2;
+    }
 
     public CameraState GetCameraState()
     {
@@ -50,7 +85,7 @@ public class GDMCooperativeCamera : MonoBehaviour
         return -1;
     }
 
-    private void FocusCameraOnCharacters(List<BattlePlayer> listOfBattlePlayers)
+    private void FocusCameraOnCharacters(List<BattleCharacter> listOfBattlePlayers)
     {
         if (BattleManager.GetInstance() != null)
         {
@@ -59,13 +94,15 @@ public class GDMCooperativeCamera : MonoBehaviour
             {
                 resultBattleCharacters.Add(listOfBattlePlayers[i]);
             }
+            if (BattleManager.GetInstance().controlPlayerTarget != null)
+            resultBattleCharacters.Add(BattleManager.GetInstance().controlPlayerTarget);
             BattleManager.GetInstance().StartCameraTargetSelect(BattleManager.GetInstance().GetControlPlayer(), resultBattleCharacters);
         }
     }
 
-    private List<BattlePlayer> GetListOfFocusableCharacters(List<BattlePlayer> listOfBattleCharacters)
+    private List<BattleCharacter> GetListOfFocusableCharacters(List<BattlePlayer> listOfBattleCharacters)
     {
-        List<BattlePlayer> resultBattleCharacters = new List<BattlePlayer>();
+        List<BattleCharacter> resultBattleCharacters = new List<BattleCharacter>();
         if (BattleManager.GetInstance() != null)
         {
             for (int i = 0; i < listOfBattleCharacters.Count; i++)
@@ -79,6 +116,7 @@ public class GDMCooperativeCamera : MonoBehaviour
                     resultBattleCharacters.Add(listOfBattleCharacters[i]);
                 }
             }
+            resultBattleCharacters.Add(BattleManager.GetInstance().controlPlayerTarget);
         }
         return resultBattleCharacters;
     }
@@ -90,76 +128,122 @@ public class GDMCooperativeCamera : MonoBehaviour
 
     public void Update()
     {
-        //Check if BattleManager instance exists
-        if (BattleManager.GetInstance() != null)
+        BattleManager battleManager = BattleManager.GetInstance();
+
+        // No BattleManager = not in battle
+        if (battleManager == null)
         {
-            //If player count detected, enter battle
-            if (BattleManager.GetInstance().battlePlayerList.Count > 0)
+            state = CameraState.NotInBattle;
+            previousBattleTimer = -1f;
+            return;
+        }
+
+        // ---------------------------------------------------------
+        // Camera-blocking states
+        // ---------------------------------------------------------
+
+        // Non-playable state, such as a cutscene.
+        if ((BattleState)battleManager.stateMachine.currentState != BattleState.Playable)
+        {
+            if (state == CameraState.CoopMode)
             {
-                //State manager
-                if (state == CameraState.NotInBattle)
+                ResetBattleCamera();
+            }
+
+            state = CameraState.NotPlayable;
+            return;
+        }
+
+        // Battle timer has stopped advancing, meaning the game is paused.
+        if (IsBattleTimerFrozen())
+        {
+            if (state == CameraState.CoopMode)
+            {
+                ResetBattleCamera();
+            }
+
+            state = CameraState.IsPaused;
+            return;
+        }
+
+        // ---------------------------------------------------------
+        // Return from camera-blocking states
+        // ---------------------------------------------------------
+
+        if (state == CameraState.NotPlayable ||
+            state == CameraState.IsPaused)
+        {
+            state = CameraState.NotInBattle;
+        }
+
+        // ---------------------------------------------------------
+        // Normal battle state logic
+        // ---------------------------------------------------------
+
+        if (battleManager.battlePlayerList.Count > 0)
+        {
+            if (state == CameraState.NotInBattle)
+            {
+                if (GetNumberOfPlayableCharacters() == 1)
                 {
-                    if (GetNumberOfPlayableCharacters() == 1)
-                    {
-                        state = CameraState.SoloMode;
-                    }
-                    else if (GetNumberOfPlayableCharacters() > 1)
-                    {
-                        state = CameraState.CoopMode;
-                    }
+                    state = CameraState.SoloMode;
                 }
-                else if (BattleManager.GetInstance().IsDirectingFlag() && state != CameraState.IsDirecting)
+                else if (GetNumberOfPlayableCharacters() > 1)
                 {
-                    if (state == CameraState.CoopMode)
-                    {
-                        ResetBattleCamera();
-                    }
-                    state = CameraState.IsDirecting;
+                    state = CameraState.CoopMode;
                 }
-                //In solo mode, check if players are added
-                else if (state == CameraState.SoloMode)
+            }
+            else if (battleManager.IsDirectingFlag() &&
+                     state != CameraState.IsDirecting)
+            {
+                if (state == CameraState.CoopMode)
+                {
+                    ResetBattleCamera();
+                }
+
+                state = CameraState.IsDirecting;
+            }
+            else if (state == CameraState.SoloMode)
+            {
+                if (GetNumberOfPlayableCharacters() > 1)
+                {
+                    state = CameraState.CoopMode;
+                }
+            }
+            else if (state == CameraState.CoopMode)
+            {
+                if (GetNumberOfPlayableCharacters() == 1)
+                {
+                    ResetBattleCamera();
+                    state = CameraState.SoloMode;
+                }
+            }
+            else if (state == CameraState.IsDirecting)
+            {
+                if (!battleManager.IsDirectingFlag())
                 {
                     if (GetNumberOfPlayableCharacters() > 1)
                     {
                         state = CameraState.CoopMode;
                     }
-                }
-                //In coop mode, check if camera is required to be reset
-                else if (state == CameraState.CoopMode)
-                {
-                    if (GetNumberOfPlayableCharacters() == 1)
+                    else if (GetNumberOfPlayableCharacters() == 1)
                     {
                         ResetBattleCamera();
                         state = CameraState.SoloMode;
                     }
                 }
-                else if (state == CameraState.IsDirecting)
-                {
-                    if (!BattleManager.GetInstance().IsDirectingFlag())
-                    {
-                        //In solo mode, check if players are added
-                        if (GetNumberOfPlayableCharacters() > 1)
-                        {
-                            state = CameraState.CoopMode;
-                        }
-                        //In coop mode, check if camera is required to be reset
-                        else if (GetNumberOfPlayableCharacters() == 1)
-                        {
-                            ResetBattleCamera();
-                            state = CameraState.SoloMode;
-                        }
-                    }
-                }
-                //always logic
-                if (state == CameraState.CoopMode && !BattleManager.GetInstance().IsDirectingFlag())
-                {
-                    FocusCameraOnCharacters(GetListOfFocusableCharacters(BattleManager.GetInstance().battlePlayerList));
-                }
-                //end of camera logic
             }
-            //default null
+
+            // Only override the camera during cooperative playable gameplay.
+            if (state == CameraState.CoopMode &&
+                !battleManager.IsDirectingFlag())
+            {
+                FocusCameraOnCharacters(
+                    GetListOfFocusableCharacters(
+                        battleManager.battlePlayerList
+                    )
+                );
+            }
         }
-        //If no players detected and state is still in battle, set to not in battle
-        else if (state != CameraState.NotInBattle) state = CameraState.NotInBattle;
     }
 }

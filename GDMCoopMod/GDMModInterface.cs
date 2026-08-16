@@ -1,9 +1,5 @@
 ﻿using BepInEx.Unity.IL2CPP.Configuration;
-using Common;
-using Game;
 using GDMCoopMod;
-using Il2CppSystem.Collections.Generic;
-using SimpleSpritePacker;
 using System;
 using System.Text;
 using UnityEngine;
@@ -19,8 +15,6 @@ public class GDMModInterface : MonoBehaviour
     private KeyboardShortcut f7Key = new KeyboardShortcut(KeyCode.F7); //Unassign all Key
 #if DEBUG
     private KeyboardShortcut f8Key = new KeyboardShortcut(KeyCode.F8); //Debug Key
-    private bool debugFlag = false;
-    public static int debugCounter = 0;
 #endif
     private bool isSelectingCharacter;
     private int controllerIndexToAssign;
@@ -123,16 +117,7 @@ public class GDMModInterface : MonoBehaviour
 #if DEBUG
         if (f8Key.IsDown())
         {
-            if (!debugFlag)
-            {
-                GDMCoopPlugin.OverlayHost.Init("Coop Camera On");
-            }
-            else
-            {
-                BattleManager.GetInstance().EndCameraTargetSelect(true);
-                GDMCoopPlugin.OverlayHost.Init("Coop Camera Off");
-            }
-            debugFlag = !debugFlag;
+            GDMCoopPlugin.OverlayHost.Init("DEBUG");
         }
 #endif
         if (f5Key.IsDown())
