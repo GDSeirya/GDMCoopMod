@@ -1,5 +1,4 @@
-﻿using Common;
-using Game;
+﻿using Game;
 using GDMCoopMod;
 using System.Collections.Generic;
 using System.Text;

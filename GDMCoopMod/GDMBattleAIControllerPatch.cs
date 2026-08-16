@@ -2,11 +2,7 @@
 using Game;
 using GDMCoopMod;
 using HarmonyLib;
-using SimpleSpritePacker;
-using System;
 using System.Collections.Generic;
-using System.Text;
-using UnityEngine;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
 
