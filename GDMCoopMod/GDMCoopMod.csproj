@@ -6,48 +6,53 @@
     <Nullable>disable</Nullable>
     <Copyright>GD Seirya &amp; Mithras Seirya</Copyright>
     <Description>A cooperative multiplayer mod for Star Ocean: The Second Story R, built using BepInEx and Unity IL2CPP modding tools.</Description>
-    <PackageReleaseNotes>Initial release of the mod.</PackageReleaseNotes>
+    <PackageReleaseNotes>Fix camera issue where it overrode cutscenes</PackageReleaseNotes>
+    <AssemblyVersion>1.7.2.0</AssemblyVersion>
+    <FileVersion>1.7.2.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="0Harmony">
-      <HintPath>G:\Documents\Unity Modding\SO2R Modding\SO2R Modding Station\BepInEx\core\0Harmony.dll</HintPath>
+      <HintPath>F:\SteamLibrary\steamapps\common\STAR OCEAN THE SECOND STORY R\BepInEx\core\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>G:\Documents\Unity Modding\SO2R Modding\SO2R Modding Station\BepInEx\interop\Assembly-CSharp.dll</HintPath>
+      <HintPath>F:\SteamLibrary\steamapps\common\STAR OCEAN THE SECOND STORY R\BepInEx\interop\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx.Core">
-      <HintPath>G:\Documents\Unity Modding\SO2R Modding\SO2R Modding Station\BepInEx\core\BepInEx.Core.dll</HintPath>
+      <HintPath>F:\SteamLibrary\steamapps\common\STAR OCEAN THE SECOND STORY R\BepInEx\core\BepInEx.Core.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx.Unity.IL2CPP">
-      <HintPath>G:\Documents\Unity Modding\SO2R Modding\SO2R Modding Station\BepInEx\core\BepInEx.Unity.IL2CPP.dll</HintPath>
+      <HintPath>F:\SteamLibrary\steamapps\common\STAR OCEAN THE SECOND STORY R\BepInEx\core\BepInEx.Unity.IL2CPP.dll</HintPath>
+    </Reference>
+    <Reference Include="Cinemachine">
+      <HintPath>..\..\..\SteamLibrary\steamapps\common\STAR OCEAN THE SECOND STORY R\BepInEx\interop\Cinemachine.dll</HintPath>
     </Reference>
     <Reference Include="Il2CppInterop.Runtime">
-      <HintPath>G:\Documents\Unity Modding\SO2R Modding\SO2R Modding Station\BepInEx\core\Il2CppInterop.Runtime.dll</HintPath>
+      <HintPath>F:\SteamLibrary\steamapps\common\STAR OCEAN THE SECOND STORY R\BepInEx\core\Il2CppInterop.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="Il2Cppmscorlib">
-      <HintPath>G:\Documents\Unity Modding\SO2R Modding\SO2R Modding Station\BepInEx\interop\Il2Cppmscorlib.dll</HintPath>
+      <HintPath>F:\SteamLibrary\steamapps\common\STAR OCEAN THE SECOND STORY R\BepInEx\interop\Il2Cppmscorlib.dll</HintPath>
     </Reference>
     <Reference Include="Unity.InputSystem">
-      <HintPath>G:\Documents\Unity Modding\SO2R Modding\SO2R Modding Station\BepInEx\interop\Unity.InputSystem.dll</HintPath>
+      <HintPath>F:\SteamLibrary\steamapps\common\STAR OCEAN THE SECOND STORY R\BepInEx\interop\Unity.InputSystem.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>G:\Documents\Unity Modding\SO2R Modding\SO2R Modding Station\BepInEx\interop\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>F:\SteamLibrary\steamapps\common\STAR OCEAN THE SECOND STORY R\BepInEx\interop\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>G:\Documents\Unity Modding\SO2R Modding\SO2R Modding Station\BepInEx\interop\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>F:\SteamLibrary\steamapps\common\STAR OCEAN THE SECOND STORY R\BepInEx\interop\UnityEngine.IMGUIModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>G:\Documents\Unity Modding\SO2R Modding\SO2R Modding Station\BepInEx\interop\UnityEngine.InputLegacyModule.dll</HintPath>
+      <HintPath>F:\SteamLibrary\steamapps\common\STAR OCEAN THE SECOND STORY R\BepInEx\interop\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
-      <HintPath>G:\Documents\Unity Modding\SO2R Modding\SO2R Modding Station\BepInEx\interop\UnityEngine.PhysicsModule.dll</HintPath>
+      <HintPath>F:\SteamLibrary\steamapps\common\STAR OCEAN THE SECOND STORY R\BepInEx\interop\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>G:\Documents\Unity Modding\SO2R Modding\SO2R Modding Station\BepInEx\interop\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>F:\SteamLibrary\steamapps\common\STAR OCEAN THE SECOND STORY R\BepInEx\interop\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>G:\Documents\Unity Modding\SO2R Modding\SO2R Modding Station\BepInEx\interop\UnityEngine.UI.dll</HintPath>
+      <HintPath>F:\SteamLibrary\steamapps\common\STAR OCEAN THE SECOND STORY R\BepInEx\interop\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
 

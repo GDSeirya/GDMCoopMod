@@ -1,4 +1,5 @@
 ﻿#if DEBUG
+using Common;
 using Game;
 using System.Text;
 using UnityEngine;
@@ -25,9 +26,53 @@ namespace GDMCoopMod
             int startY = 20;
             int rowHeight = 30 * 10;
 
+            if (CameraManager.instance != null && BattleManager.instance != null)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine($"Extended Debug");
+                sb.AppendLine($"IsBattleSkillCameraTask {BattleManager.instance.IsBattleSkillCameraTask()}");
+
+                if (BattleManager.instance != null)
+                {
+                    if (BattleManager.instance.battleSkillCameraTask != null)
+                    {
+                        sb.AppendLine($"BattleSkillCameraTaskCurrentState {BattleManager.instance.battleSkillCameraTask.currentState}");
+                        if (BattleManager.instance.battleSkillCameraTask.taskComponent != null)
+                        {
+                            sb.AppendLine($"Camera Task Component {BattleManager.instance.battleSkillCameraTask.taskComponent.ToString()}");
+                        }
+
+
+                    }
+
+                    sb.AppendLine($"POS {BattleManager.instance.cameraTargetLocator.transform.position.x:0.00}, {BattleManager.instance.cameraTargetLocator.transform.position.y:0.00}, {BattleManager.instance.cameraTargetLocator.transform.position.z:0.00}");
+                    if (BattleManager.instance.virtualCamera != null)
+                    {
+                        sb.AppendLine($"POSV {BattleManager.instance.virtualCamera.transform.position.x:0.00}, {BattleManager.instance.virtualCamera.transform.position.y:0.00}, {BattleManager.instance.virtualCamera.transform.position.z:0.00}");
+                        sb.AppendLine($"Name {BattleManager.instance.virtualCamera.Name}");
+                        sb.AppendLine($"Descriptor {BattleManager.instance.virtualCamera.Description}");
+                        sb.AppendLine($"HasChanged {BattleManager.instance.virtualCamera.FollowTargetChanged}");
+                        sb.AppendLine($"LookatChanged {BattleManager.instance.virtualCamera.LookAtTargetChanged}");
+                        sb.AppendLine($"Priority {BattleManager.instance.virtualCamera.Priority}");
+                        sb.AppendLine($"ValidPrevState {BattleManager.instance.virtualCamera.PreviousStateIsValid}");
+
+                    }
+
+                }
+
+
+
+                GUI.Label(
+                        new Rect(startX + 500, startY + (rowHeight), 1000, rowHeight),
+                        sb.ToString(),
+                        style
+                    );
+            }
             
+
             if (BattleManager.GetInstance() != null)
             {
+                
                 for (int i = 0; i < BattleManager.GetInstance().battlePlayerList.Count; i++)
                 {
                     BattlePlayer battlePlayer = BattleManager.GetInstance().battlePlayerList[i];

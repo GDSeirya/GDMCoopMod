@@ -8,6 +8,10 @@ public class GDMCooperativeCamera : MonoBehaviour
     private float previousBattleTimer = -1f;
     private int frozenBattleTimerFrames = 0;
 
+    private const float CameraCooldownDuration = 1.25f;
+    private float cameraCooldownTimer = 0f;
+    private bool previousFollowTargetChanged = false;
+
     public enum CameraState
     {
         NotInBattle,
@@ -126,15 +130,52 @@ public class GDMCooperativeCamera : MonoBehaviour
         BattleManager.GetInstance().EndCameraTargetSelect(true);
     }
 
-    public void Update()
+    private bool IsCameraOnCooldown()
+    {
+        return cameraCooldownTimer > 0f;
+    }
+
+    private void UpdateCameraCooldown()
     {
         BattleManager battleManager = BattleManager.GetInstance();
 
+        if (battleManager == null || battleManager.virtualCamera == null)
+        {
+            cameraCooldownTimer = 0f;
+            previousFollowTargetChanged = false;
+            return;
+        }
+
+        bool followTargetChanged = battleManager.virtualCamera.FollowTargetChanged;
+
+        // Detect when FollowTargetChanged becomes true.
+        if (followTargetChanged && !previousFollowTargetChanged)
+        {
+            // Refresh the cooldown, regardless of its current value.
+            cameraCooldownTimer = CameraCooldownDuration;
+        }
+
+        previousFollowTargetChanged = followTargetChanged;
+
+        // Count down every frame.
+        if (cameraCooldownTimer > 0f)
+        {
+            cameraCooldownTimer -= Time.deltaTime;
+
+            if (cameraCooldownTimer < 0f) cameraCooldownTimer = 0f;
+        }
+    }
+
+    public void Update()
+    {
+        BattleManager battleManager = BattleManager.GetInstance();
+        UpdateCameraCooldown();
         // No BattleManager = not in battle
         if (battleManager == null)
         {
             state = CameraState.NotInBattle;
             previousBattleTimer = -1f;
+            cameraCooldownTimer = 0f;
             return;
         }
 
@@ -236,7 +277,8 @@ public class GDMCooperativeCamera : MonoBehaviour
 
             // Only override the camera during cooperative playable gameplay.
             if (state == CameraState.CoopMode &&
-                !battleManager.IsDirectingFlag())
+                !battleManager.IsDirectingFlag() &&
+                !IsCameraOnCooldown())
             {
                 FocusCameraOnCharacters(
                     GetListOfFocusableCharacters(
