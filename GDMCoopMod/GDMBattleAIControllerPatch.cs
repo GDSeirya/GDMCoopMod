@@ -282,6 +282,13 @@ public static class BattleAIControllerPatch
         return isPartyAiEnabled;
     }
 
+    private static void ClearPendingAI(BattleAIController ai)
+    {
+        ai.ActionParameter.Reset();
+        ai.ActionRequestParameter.Reset();
+    }
+
+
     [HarmonyPrefix]
     public static bool Prefix(ref BattleAIController __instance)
     {
@@ -454,6 +461,7 @@ public static class BattleAIControllerPatch
                                 }
                                 else
                                 {
+                                    ClearPendingAI(__instance);
                                     BattleEnemy closestEnemy = GetClosestEnemy(__instance.OwnerObject);
                                     if (closestEnemy != null)
                                     {

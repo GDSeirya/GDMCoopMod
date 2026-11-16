@@ -7,8 +7,8 @@
     <Copyright>GD Seirya &amp; Mithras Seirya</Copyright>
     <Description>A cooperative multiplayer mod for Star Ocean: The Second Story R, built using BepInEx and Unity IL2CPP modding tools.</Description>
     <PackageReleaseNotes>Fix camera issue where it overrode cutscenes</PackageReleaseNotes>
-    <AssemblyVersion>1.7.2.0</AssemblyVersion>
-    <FileVersion>1.7.2.0</FileVersion>
+    <AssemblyVersion>1.7.3.0</AssemblyVersion>
+    <FileVersion>1.7.3.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
