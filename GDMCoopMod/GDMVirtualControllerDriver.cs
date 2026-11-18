@@ -15,6 +15,43 @@ namespace GDMCoopMod
         // Index 2 = Player 3
         // Index 3 = Player 4
         private readonly Gamepad[] registeredGamepads = new Gamepad[4];
+        private readonly string[] slotIdentity = new string[4];   // survives disconnects
+        private readonly Gamepad[] slotLastPad = new Gamepad[4];  // survives disconnects
+        private readonly float[] slotLeftAt = new float[4];
+
+        private static string GetIdentity(Gamepad pad)
+        {
+            var d = pad.description;
+            return $"{d.interfaceName}|{d.manufacturer}|{d.product}|{d.version}|{d.serial}";
+        }
+
+        private int ChooseSlot(Gamepad pad)
+        {
+            string id = GetIdentity(pad);
+
+            // 1. Same device object coming back (Input System often reuses it)
+            for (int s = 0; s < 4; s++)
+                if (registeredGamepads[s] == null && slotLastPad[s] == pad) return s;
+
+            // 2. Same kind/serial of controller as one that left
+            int best = -1;
+            for (int s = 0; s < 4; s++)
+                if (registeredGamepads[s] == null && slotIdentity[s] == id)
+                    if (best == -1 || slotLeftAt[s] < slotLeftAt[best]) best = s;
+            if (best != -1) return best;
+
+            // 3. Genuinely new pad: take an empty slot nobody is waiting on
+            for (int s = 0; s < 4; s++)
+                if (registeredGamepads[s] == null && slotIdentity[s] == null) return s;
+
+            // 4. Only reserved slots left: use the one that has been away longest
+            for (int s = 0; s < 4; s++)
+                if (registeredGamepads[s] == null)
+                    if (best == -1 || slotLeftAt[s] < slotLeftAt[best]) best = s;
+            return best;   // -1 means no room
+        }
+
+
 
         private void Update()
         {
@@ -32,15 +69,8 @@ namespace GDMCoopMod
                 if (IsRegistered(gamepad))
                     continue;
 
-                // Find the first empty player slot.
-                for (int playerIndex = 0; playerIndex < registeredGamepads.Length; playerIndex++)
-                {
-                    if (registeredGamepads[playerIndex] != null)
-                        continue;
-
-                    RegisterGamepad(gamepad, playerIndex);
-                    break;
-                }
+                // Dynamically choose the next available slot
+                int slot = ChooseSlot(gamepad); if (slot >= 0) RegisterGamepad(gamepad, slot);
             }
 
             // Look for disconnected controllers.
@@ -83,6 +113,7 @@ namespace GDMCoopMod
         private void RegisterGamepad(Gamepad gamepad, int playerIndex)
         {
             registeredGamepads[playerIndex] = gamepad;
+            slotIdentity[playerIndex] = GetIdentity(gamepad);
             GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("ControllerRegistered",gamepad.displayName,playerIndex + 1));
         }
 
@@ -92,6 +123,7 @@ namespace GDMCoopMod
             GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("ControllerDeregistered",gamepad.displayName,playerIndex + 1));
             registeredGamepads[playerIndex] = null;
             ClearVirtualInput(playerIndex);
+            slotLastPad[playerIndex] = gamepad;
         }
 
         private void UpdateVirtualInputs()

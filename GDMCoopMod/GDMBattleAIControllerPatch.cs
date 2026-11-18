@@ -2,10 +2,74 @@
 using Game;
 using GDMCoopMod;
 using HarmonyLib;
+using JetBrains.Annotations;
+using SimpleSpritePacker;
+using System;
 using System.Collections.Generic;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
 
+//Patch do attack notify to store information about attack warnings
+[HarmonyPatch(typeof(BattleCharacter), nameof(BattleCharacter.DoAttackNotify))]
+class NotifyPatch
+{
+    private static bool partnerNotify;
+    private static BattleCharacter notifyTarget;
+
+    public static bool GetPartnerNotify()
+    {
+        return partnerNotify;
+    }
+
+    public static BattleCharacter GetNotifyTarget()
+    {
+        return notifyTarget;
+    }
+
+    static void Prefix(BattleCharacter target)
+    {
+        notifyTarget = target;
+        //Check if valid, controlled character that is not leader
+        partnerNotify = (target != null && !target.IsControlPlayer() && GDMControllerRouting.GetControllerForParty(target.indexInParty) >= 0);
+    }
+
+    static void Finalizer()
+    {
+        partnerNotify = false;
+        notifyTarget = null;
+    }
+}
+
+//Patches enemy attacking to create a red aura notification by forcing return that this is a target to notify
+[HarmonyPatch(typeof(BattleCharacter), nameof(BattleCharacter.IsControlPlayer))]
+class ControlPlayerPatch
+{
+    static void Postfix(BattleCharacter __instance, ref bool __result)
+    {
+        if (NotifyPatch.GetPartnerNotify() && __instance == NotifyPatch.GetNotifyTarget()) __result = true;
+    }
+}
+
+//Patch MP Presenter
+[HarmonyPatch(typeof(UIBattleWarningMPPresenter), nameof(UIBattleWarningMPPresenter.Show))]
+class WarningMpShowPatch
+{
+    public static BattleCharacter PartnerWarningTarget; // set only around a partner's call
+
+    static void Prefix(UIBattleWarningMPPresenter __instance)
+    {
+        BattleCharacter owner = PartnerWarningTarget;
+        if (owner == null) owner = BattleManager.GetInstance().GetControlPlayer();
+        PartnerWarningTarget = null; // Reset partner warning target
+
+        if (owner == null) return; // Use original code
+        var ui = GameUIManager.GetInstance().UIBattleController;
+        var offset = UIBattleController.StaminaWorldOffset;
+        __instance.Set(owner.transform, ui.myCanvas, ref offset);
+    }
+}
+
+//Patch AIRun
 [HarmonyPatch(typeof(BattleAIController), "AIRun")]
 public static class BattleAIControllerPatch
 {
@@ -287,8 +351,39 @@ public static class BattleAIControllerPatch
         ai.ActionParameter.Reset();
         ai.ActionRequestParameter.Reset();
     }
+    private static void NoMPNotification(BattleCharacter battleCharacter)
+    {
+        WarningMpShowPatch.PartnerWarningTarget = battleCharacter;
+        try
+        {
+            GameUIManager uiManager = GameUIManager.GetInstance();
+            UIBattleController uiBattleController = uiManager.UIBattleController;
+            uiBattleController.ShowWarningMP();
+        }
+        finally
+        {
+            WarningMpShowPatch.PartnerWarningTarget = null;
+        }
+    }
+
+    private static void ResetMPNotificationTarget()
+    {
+        GameUIManager uiManager = GameUIManager.GetInstance();
+        if (uiManager != null)
+        {
+            if (BattleManager.GetInstance() != null)
+            {
+                UIBattleController uiBattleController = uiManager.UIBattleController;
+                BattleManager battleManager = BattleManager.GetInstance();
+                Vector3 offset = UIBattleController.StaminaWorldOffset;
+                uiBattleController.warningMPPresenter.Set(battleManager.GetControlPlayer().transform, uiBattleController.myCanvas, ref offset);
+                uiBattleController.ShowWarningMP();
+            }
+        }
+    }
 
 
+    //Start of AIRun
     [HarmonyPrefix]
     public static bool Prefix(ref BattleAIController __instance)
     {
@@ -593,6 +688,7 @@ public static class BattleAIControllerPatch
                                 else
                                 {
                                     //Play buzzer if no MP
+                                    NoMPNotification(__instance.OwnerObject);
                                     GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.ActionBuzzer);
                                 }
                             }
@@ -659,6 +755,7 @@ public static class BattleAIControllerPatch
                                 }
                                 else
                                 {
+                                    NoMPNotification(__instance.OwnerObject);
                                     GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.ActionBuzzer);
                                 }
                                 
@@ -710,6 +807,7 @@ public static class BattleAIControllerPatch
                                         }
                                         else
                                         {
+                                            NoMPNotification(__instance.OwnerObject);
                                             GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.ActionBuzzer);
                                         }
                                     }
