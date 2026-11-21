@@ -14,10 +14,12 @@ namespace GDMCoopMod
         public bool RightSkillHeld;
         public bool ChangeToSlot1Held;
         public bool ChangeToSlot2Held;
-        public bool ChangeToSlot3Held; 
+        public bool ChangeToSlot3Held;
         public bool ChangeToSlot4Held;
         public bool TargetingModeHeld;
         public bool UseMagicHeld;
+        public bool EmoteModifierHeld; //right trigger
+        public bool WestHeld;
 
         // PRESS events (onPress)
         public bool AttackPressed;
@@ -30,6 +32,7 @@ namespace GDMCoopMod
         public bool ChangeToSlot4Pressed;
         public bool TargetingModePressed;
         public bool UseMagicPressed;
+        public bool WestPressed;
 
         // RELEASE events (onRelease)
         public bool AttackReleased;
@@ -42,7 +45,7 @@ namespace GDMCoopMod
         public bool ChangeToSlot4Released;
         public bool TargetingModeReleased;
         public bool UseMagicReleased;
-        
+
         // Previous frame states
         public bool PrevAttack;
         public bool PrevEvade;
@@ -54,6 +57,7 @@ namespace GDMCoopMod
         public bool PrevChangeToSlot4;
         public bool PrevTargetingMode;
         public bool PrevUseMagic;
+        public bool PrevWest;
 
         // Right stick (analog)
         public Vector2 RightStick;
@@ -82,7 +86,7 @@ namespace GDMCoopMod
 
             LeftSkillPressed = LeftSkillHeld && !PrevLeftSkill;
             LeftSkillReleased = !LeftSkillHeld && PrevLeftSkill;
-            
+
             RightSkillPressed = RightSkillHeld && !PrevRightSkill;
             RightSkillReleased = !RightSkillHeld && PrevRightSkill;
 
@@ -104,6 +108,8 @@ namespace GDMCoopMod
             UseMagicPressed = UseMagicHeld && !PrevUseMagic;
             UseMagicReleased = !UseMagicHeld && PrevUseMagic;
 
+            WestPressed = WestHeld && !PrevWest;
+
             UpdateSpellScrolling(deltaTime);
 
             // Update previous frame states
@@ -117,6 +123,7 @@ namespace GDMCoopMod
             PrevChangeToSlot4 = ChangeToSlot4Held;
             PrevTargetingMode = TargetingModeHeld;
             PrevUseMagic = UseMagicHeld;
+            PrevWest = WestHeld;
         }
 
         public void Clear()
@@ -136,6 +143,8 @@ namespace GDMCoopMod
             ChangeToSlot4Held = false;
             TargetingModeHeld = false;
             UseMagicHeld = false;
+            EmoteModifierHeld = false;
+            WestHeld = false;
 
             // Press events
             AttackPressed = false;
@@ -148,6 +157,7 @@ namespace GDMCoopMod
             ChangeToSlot4Pressed = false;
             TargetingModePressed = false;
             UseMagicPressed = false;
+            WestPressed = false;
 
             // Release events
             AttackReleased = false;
@@ -172,6 +182,7 @@ namespace GDMCoopMod
             PrevChangeToSlot4 = false;
             PrevTargetingMode = false;
             PrevUseMagic = false;
+            PrevWest = false;
 
             RightStickScrolling = false;
             RightStickHoldTime = 0f;

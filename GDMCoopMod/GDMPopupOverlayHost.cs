@@ -23,6 +23,11 @@ public class GDMPopupOverlayHost : MonoBehaviour
             }
             
         }
+        while (gdmPopupOverlays.Count > 16)
+        {
+            gdmPopupOverlays[0].Destroy();
+            gdmPopupOverlays.RemoveAt(0);
+        }
     }
 
     private void OnGUI()

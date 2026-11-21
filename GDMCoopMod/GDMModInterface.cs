@@ -1,4 +1,5 @@
 ﻿using BepInEx.Unity.IL2CPP.Configuration;
+using Game;
 using GDMCoopMod;
 using System;
 using System.Text;
@@ -118,6 +119,15 @@ public class GDMModInterface : MonoBehaviour
         if (f8Key.IsDown())
         {
             GDMCoopPlugin.OverlayHost.Init("DEBUG");
+            if (BattleManager.GetInstance() != null)
+            {
+                if (BattleManager.GetInstance().battlePlayerList.Count == 0)
+                {
+                    FieldEmote.Show(FieldManager.GetInstance().GetControlPlayer(), UIDefine.EmotionType.);
+                    GDMCoopPlugin.OverlayHost.Init("DEBUG2");
+                }
+            }
+            
         }
 #endif
         if (f5Key.IsDown())

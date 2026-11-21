@@ -5,7 +5,7 @@ using BepInEx.Unity.IL2CPP;
 using GDMCoopMod;
 using HarmonyLib;
 
-[BepInPlugin("gdm.coopmod", "GDM Coop Plugin", "1.7.4")]
+[BepInPlugin("gdm.coopmod", "GDM Coop Plugin", "1.8.0")]
 public class GDMCoopPlugin : BasePlugin
 {
     public static ManualLogSource StaticLog;
@@ -55,6 +55,8 @@ public class GDMCoopPlugin : BasePlugin
             "Party/character index assigned to controller 3. Set to -1 to disable. Set to 3 for character 4."
         );
 
+        GDMEmoteSettings.Init(Config);
+
         // -----------------------------
         // Mod initialization
         // -----------------------------
@@ -70,6 +72,7 @@ public class GDMCoopPlugin : BasePlugin
         OverlayHost = AddComponent<GDMPopupOverlayHost>();
         AddComponent<GDMSpellDisplayManager>();
         AddComponent<GDMCooperativeCamera>();
+        AddComponent<GDMFieldEmoteManager>();
 #if DEBUG
         AddComponent<GDMDebugDisplay>();
 #endif
@@ -87,10 +90,10 @@ public class GDMCoopPlugin : BasePlugin
         // Apply controller assignments
         // -----------------------------
 
-        AssignConfiguredController(0,player1Character.Value);
-        AssignConfiguredController(1,player2Character.Value);
-        AssignConfiguredController(2,player3Character.Value);
-        AssignConfiguredController(3,player4Character.Value);
+        AssignConfiguredController(0, player1Character.Value);
+        AssignConfiguredController(1, player2Character.Value);
+        AssignConfiguredController(2, player3Character.Value);
+        AssignConfiguredController(3, player4Character.Value);
 
 
         StaticLog.LogInfo("GDM Coop Plugin loaded v1.7.4");
@@ -114,6 +117,6 @@ public class GDMCoopPlugin : BasePlugin
             OverlayHost.Init(LanguageManager.Get("InterfaceNull"));
             return;
         }
-        modInterface.AssignCharacterToController(partyIndex,controllerIndex);
+        modInterface.AssignCharacterToController(partyIndex, controllerIndex);
     }
 }

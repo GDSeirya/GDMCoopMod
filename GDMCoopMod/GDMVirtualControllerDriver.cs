@@ -114,13 +114,13 @@ namespace GDMCoopMod
         {
             registeredGamepads[playerIndex] = gamepad;
             slotIdentity[playerIndex] = GetIdentity(gamepad);
-            GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("ControllerRegistered",gamepad.displayName,playerIndex + 1));
+            GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("ControllerRegistered", gamepad.displayName, playerIndex + 1));
         }
 
         private void DeregisterGamepad(int playerIndex)
         {
             Gamepad gamepad = registeredGamepads[playerIndex];
-            GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("ControllerDeregistered",gamepad.displayName,playerIndex + 1));
+            GDMCoopPlugin.OverlayHost.Init(LanguageManager.Get("ControllerDeregistered", gamepad.displayName, playerIndex + 1));
             registeredGamepads[playerIndex] = null;
             ClearVirtualInput(playerIndex);
             slotLastPad[playerIndex] = gamepad;
@@ -169,6 +169,10 @@ namespace GDMCoopMod
                 state.TargetingModeHeld = pad.leftTrigger.isPressed;
                 state.UseMagicHeld = pad.buttonNorth.isPressed;
 
+                // Overworld emotes: right trigger is the modifier, West is the 4th emote button.
+                state.EmoteModifierHeld = pad.rightTrigger.isPressed;
+                state.WestHeld = pad.buttonWest.isPressed;
+
                 // Calculate press/release events.
                 state.UpdateEvents(Time.deltaTime);
 
@@ -212,6 +216,9 @@ namespace GDMCoopMod
 
             state.TargetingModeHeld = false;
             state.UseMagicHeld = false;
+
+            state.EmoteModifierHeld = false;
+            state.WestHeld = false;
         }
     }
 }
