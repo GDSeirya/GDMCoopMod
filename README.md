@@ -26,6 +26,7 @@ Current features:
   - Cast the selected spell using the north button
 - Controller hot-plugging and automatic controller detection
 - Support for the game's supported languages
+- Overworld emotion bubbles for coop players (face buttons, or right trigger + face button)
 
 ## Requirements
 
@@ -104,6 +105,26 @@ To remove Controller 2 from its assigned character:
 To remove all controller assignments:
 
 - Press **F7**.
+
+## Overworld Emotes
+
+Coop players can show the game's emotion bubbles above their character while exploring the overworld. There are two sets of four emotes:
+
+| Input | Default emotion |
+|---|---|
+| **South (A / Cross)** | Exclamation |
+| **East (B / Circle)** | Question |
+| **West (X / Square)** | Heart |
+| **North (Y / Triangle)** | Note |
+| **RT + South** | Laugh |
+| **RT + East** | Angry |
+| **RT + West** | Gloomy |
+| **RT + North** | LightBulb |
+
+- The bubble appears over the character that controller is assigned to.
+- Emotes only work while you can move freely: not in battle, events, or the camp menu.
+- The host (controller 1) is excluded by default, because the game still reads the host's face buttons. Enable it with `Host Emotes` in the config. The host only uses the **RT + face button** set, so talking and confirming are never affected.
+- Every button's emotion, the duration, and the on/off toggle are in the config file (`BepInEx/config/gdm.coopmod.cfg`), created automatically on first launch. Changes apply the next time the game starts. Available emotions (use the number): 0 Sweat, 1 Exclamation, 2 Question, 3 Notice, 4 Angry, 5 Note, 6 Gloomy, 7 Heart, 8 LightBulb, 9 ColdSweat, 10 Laugh, 11 TurnPale, 12 Exclamation2, 13 Silence, 14 SweatReverse, 15 NoticeReverse, 16 Sleep.
 
 ## Building From Source
 
@@ -263,6 +284,7 @@ GDM Coop Mod の最新リリースはこちらからダウンロードできま�
   - 北ボタンで選択中の呪紋を使用
 - コントローラーの接続・切断の検出とホットプラグ対応
 - ゲームでサポートされている言語への対応
+- フィールドでの感情マーク（吹き出し）表示（フェイスボタン／右トリガー＋フェイスボタン）
 
 ## 必要環境
 
@@ -341,6 +363,26 @@ BepInEx が自動的にプラグインを読み込みます。
 すべてのコントローラーの割り当てを解除する場合:
 
 - **F7** を押します。
+
+## フィールドでの感情マーク
+
+協力プレイのプレイヤーは、フィールド探索中にゲーム内の感情マーク（吹き出し）を自分のキャラクターの頭上に表示できます。4種類ずつ、2セットあります。
+
+| 入力 | デフォルトの感情 |
+|---|---|
+| **下ボタン（A / ×）** | びっくり |
+| **右ボタン（B / ○）** | はてな |
+| **左ボタン（X / □）** | ハート |
+| **上ボタン（Y / △）** | 音符 |
+| **RT + 下ボタン** | 笑い |
+| **RT + 右ボタン** | 怒り |
+| **RT + 左ボタン** | 落ち込み |
+| **RT + 上ボタン** | ひらめき |
+
+- コントローラーが割り当てられているキャラクターの頭上に表示されます。
+- 自由に移動できる状態でのみ使用できます（戦闘中、イベント中、キャンプメニュー中は使用不可）。
+- ホスト（コントローラー1）は、ゲームがホストのフェイスボタンを引き続き読み取るため、デフォルトでは対象外です。設定ファイルの `Host Emotes` で有効にできます。ホストは **RT + フェイスボタン** のセットのみ使用でき、会話や決定操作には影響しません。
+- 各ボタンの感情、表示時間、オン／オフは設定ファイル（`BepInEx/config/gdm.coopmod.cfg`）で変更できます。設定ファイルは初回起動時に自動で作成されます。変更は次回のゲーム起動時に反映されます。使用できる感情（番号で指定）: 0 Sweat, 1 Exclamation, 2 Question, 3 Notice, 4 Angry, 5 Note, 6 Gloomy, 7 Heart, 8 LightBulb, 9 ColdSweat, 10 Laugh, 11 TurnPale, 12 Exclamation2, 13 Silence, 14 SweatReverse, 15 NoticeReverse, 16 Sleep
 
 ## ソースコードからビルドする
 
