@@ -1,31 +1,22 @@
-# GDM Coop Mod
+# PietyCrit
 
-A cooperative multiplayer mod for **Star Ocean: The Second Story R**, built using **BepInEx** and **Unity IL2CPP modding tools**.
+A small gameplay mod for **Star Ocean: The Second Story R**, built using **BepInEx** and **Unity IL2CPP modding tools**.
 
-The goal of this project is to add cooperative gameplay features to Star Ocean 2 R, allowing multiple players to participate together while preserving the original game's mechanics and systems.
+In the vanilla game, each level-up of the **Piety** skill grants stat points to randomly chosen stats. This mod changes that so every Piety level-up grants **CRT** (critical rate) instead, while leaving the rest of the game's mechanics and systems untouched.
 
 ## Download
 
-The latest releases of GDM Coop Mod are available here:
+The latest releases of PietyCrit are available here:
 
-**[GDM Coop Mod Releases](https://github.com/GDSeirya/GDMCoopMod/releases)**
+**[PietyCrit Releases](https://github.com/GDSeirya/Star-Ocean-2-Second-Story-R-Piety-Patch/releases)**
 
 ## Features
 
 Current features:
 
-- Multiplayer/cooperative control for **2–4 players**
-- Localisation based on the language selected in-game
-- D-Pad support for switching battle skill slots
-- Ability to control multiple characters simultaneously
-- Switching between nearby targets and the host's target
-- Cooperative camera that tracks multiple playable characters
-- Camera support for cutscenes and host-target tracking
-- Spellcaster support:
-  - Switch between Set Spells using the right stick
-  - Cast the selected spell using the north button
-- Controller hot-plugging and automatic controller detection
-- Support for the game's supported languages
+- Piety level-ups always grant **CRT** instead of random stats
+- The number of points gained is the same as in the vanilla game
+- No other skill is affected
 
 ## Requirements
 
@@ -34,25 +25,26 @@ Current features:
 - A legitimate copy of **Star Ocean: The Second Story R**
 - [BepInEx](https://github.com/BepInEx/BepInEx) IL2CPP installed
 - Windows PC version of the game
+- Optional: [BepInEx Configuration Manager](https://github.com/BepInEx/BepInEx.ConfigurationManager) (IL2CPP build) for changing settings in-game
 
 ### For Developers
 
-- Visual Studio 2022
-- .NET 8 SDK
+- Visual Studio 2022 (or the `dotnet` CLI)
+- .NET SDK
 - BepInEx IL2CPP development environment
 - IL2CPP interop assemblies generated from the game
 
 ## Installation
 
 1. Install **BepInEx IL2CPP** into your Star Ocean: The Second Story R installation.
-2. Download the latest **GDMCoopMod.dll** from the [Releases](https://github.com/GDSeirya/GDMCoopMod/releases) page.
+2. Download the latest **PietyCrit.dll** from the [Releases](https://github.com/GDSeirya/Star-Ocean-2-Second-Story-R-Piety-Patch/releases) page.
 3. Copy the plugin DLL into:
 
 ```text
 STAR OCEAN THE SECOND STORY R/
 └── BepInEx/
     └── plugins/
-        └── GDMCoopMod.dll
+        └── PietyCrit.dll
 ```
 
 4. Launch the game.
@@ -61,73 +53,43 @@ BepInEx should automatically load the plugin.
 
 > **Note:** If you are building the mod from source, see [Building From Source](#building-from-source).
 
-## Controller & Character Assignment
+## Configuration
 
-The mod provides keyboard shortcuts for selecting controllers and assigning them to party characters.
+A config file is created on first launch at:
 
-### Controller Selection
+```text
+BepInEx/config/local.so2r.pietycrit.cfg
+```
 
-Use **F1–F4** to select which controller you want to configure.
+| Section | Setting | Default | Description |
+|---|---|---|---|
+| General | `Enabled` | `true` | When enabled, Piety level-ups grant CRT. Changes apply immediately. |
 
-| Key | Function |
-|---|---|
-| **F1** | Select Controller 1 |
-| **F2** | Select Controller 2 |
-| **F3** | Select Controller 3 |
-| **F4** | Select Controller 4 |
-| **F5** | Display controller and assignment information |
-| **F6** | Unassign the selected controller |
-| **F7** | Unassign all controllers |
-
-Once a controller has been selected, use **F1–F4** again to assign that controller to the corresponding character.
-
-### AI Control
-
-Use the following key to toggle the game's AI control:
-
-| Key | Function |
-|---|---|
-| **F9** | Toggle AI control |
-
-### Example
-
-To assign **Controller 2** to **Character 3**:
-
-1. Press **F2** to select Controller 2.
-2. Press **F3** to assign Controller 2 to Character 3.
-
-To remove Controller 2 from its assigned character:
-
-1. Press **F2** to select Controller 2.
-2. Press **F6** to unassign it.
-
-To remove all controller assignments:
-
-- Press **F7**.
+If you have the **BepInEx Configuration Manager** installed, the setting also appears in its in-game menu. The mod works the same without it.
 
 ## Building From Source
 
 Clone the repository:
 
 ```bash
-git clone https://github.com/GDSeirya/GDMCoopMod.git
+git clone https://github.com/GDSeirya/Star-Ocean-2-Second-Story-R-Piety-Patch.git
 ```
 
-Open the solution in Visual Studio 2022.
+Open `PietyCrit.csproj` and set `GameDir` to your game installation folder.
 
-Build the project using:
+Build the project using Visual Studio (**Build → Build Solution**) or the command line:
 
-```text
-Build → Build Solution
+```bash
+dotnet build -c Release
 ```
 
 The compiled DLL will be located in:
 
 ```text
 bin/
-└── Debug/
+└── Release/
     └── net8.0/
-        └── GDMCoopMod.dll
+        └── PietyCrit.dll
 ```
 
 Copy the resulting DLL into the BepInEx `plugins` folder to test the mod.
@@ -150,20 +112,16 @@ The following are required to build the mod from source.
 
 ### Required Software
 
-- **Visual Studio 2022**
-  - Workload: `.NET desktop development`
-- **.NET 8 SDK**
+- **Visual Studio 2022** (workload: `.NET desktop development`) or the `dotnet` CLI
+- **.NET SDK**
 - **Git**
 
 ### BepInEx Development Assemblies
 
-The project references assemblies provided by BepInEx:
+The project references the `BepInEx.Unity.IL2CPP` NuGet package, along with the following assembly from your BepInEx installation:
 
 ```text
 BepInEx/core/
-├── BepInEx.Core.dll
-├── BepInEx.Unity.IL2CPP.dll
-├── 0Harmony.dll
 └── Il2CppInterop.Runtime.dll
 ```
 
@@ -175,12 +133,6 @@ After installing BepInEx and launching the game once, the required IL2CPP intero
 BepInEx/interop/
 ├── Il2Cppmscorlib.dll
 ├── UnityEngine.CoreModule.dll
-├── UnityEngine.IMGUIModule.dll
-├── UnityEngine.UI.dll
-├── UnityEngine.PhysicsModule.dll
-├── UnityEngine.TextRenderingModule.dll
-├── UnityEngine.InputLegacyModule.dll
-├── Unity.InputSystem.dll
 └── Assembly-CSharp.dll
 ```
 
@@ -193,9 +145,9 @@ Developers must generate their own copies.
 1. Install BepInEx IL2CPP into the game directory.
 2. Launch the game once to generate the IL2CPP interop assemblies.
 3. Clone this repository.
-4. Update the project references to point to your local BepInEx and interop assemblies.
-5. Open the solution in Visual Studio 2022.
-6. Build the solution.
+4. Update `GameDir` in `PietyCrit.csproj` to point to your game folder.
+5. Open the project in Visual Studio 2022, or use the `dotnet` CLI.
+6. Build the project.
 
 ## Modding Notes
 
@@ -206,6 +158,15 @@ Because the game uses IL2CPP:
 - Game assemblies are generated through BepInEx's IL2CPP interop tools.
 - Decompiled assemblies are used for reference during development.
 - Runtime patches and modifications are implemented through BepInEx and Harmony.
+
+How the patch works:
+
+- The Piety branch of `Game.CharacterParameter.SkillLevelupEffect` picks a random `CharacterStatus` for each point and calls `CharacterParameter.IncreaseBaseStatus(status, value)`.
+- In the current game build, that is the only caller of `IncreaseBaseStatus`.
+- The plugin applies a Harmony prefix to `IncreaseBaseStatus` that forces `status` to `CharacterStatus.CRITICAL`.
+- `SkillLevelupEffect` itself is deliberately **not** patched. It takes a `ref GameManager.IncreaseResourcesParameter` struct containing reference-type fields, and patching it causes `NullReferenceException` errors from Il2CppInterop at startup.
+
+A future game update could rename or inline `IncreaseBaseStatus`. If CRT stops changing, check the BepInEx log.
 
 Generated game files and IL2CPP interop assemblies are intentionally not included in this repository.
 
@@ -234,35 +195,28 @@ You must own a legitimate copy of **Star Ocean: The Second Story R** to use this
 
 ---
 
-# GDM Coop Mod
+# PietyCrit
 
-**スターオーシャン セカンドストーリーR** に協力プレイ機能を追加するための Mod です。  
+**スターオーシャン セカンドストーリーR** 向けの小規模なゲームプレイ Mod です。  
 この Mod は **BepInEx** と **Unity IL2CPP モッディングツール** を使用して構築されています。
 
-本プロジェクトの目的は、スターオーシャン 2 R に協力プレイ機能を追加し、複数のプレイヤーが同時に参加できるようにしつつ、元のゲームのシステムやメカニクスを維持することです。
+通常のゲームでは、スキル「**信仰心**（Piety）」のレベルアップ時に、ランダムに選ばれたステータスが上昇します。この Mod は、信仰心のレベルアップで上昇するステータスをすべて **CRT**（クリティカル率）に変更します。それ以外のゲームのシステムやメカニクスには手を加えません。
 
 ## ダウンロード
 
-GDM Coop Mod の最新リリースはこちらからダウンロードできます。
+PietyCrit の最新リリースはこちらからダウンロードできます。
 
-**[GDM Coop Mod リリースページ](https://github.com/GDSeirya/GDMCoopMod/releases)**
+**[PietyCrit リリースページ](https://github.com/GDSeirya/Star-Ocean-2-Second-Story-R-Piety-Patch/releases)**
 
 ## 機能
 
 現在の機能:
 
-- **2～4人**でのマルチプレイヤー／協力プレイ
-- ゲーム内で設定されている言語に応じたローカライズ
-- Dパッドによるバトルスキルスロットの切り替え
-- 複数のキャラクターを同時に操作
-- 近くのターゲットとホストが選択しているターゲットの切り替え
-- 複数の操作キャラクターを追従する協力プレイ用カメラ
-- カットシーンおよびホストのターゲットに対応したカメラ制御
-- 術師への対応:
-  - 右スティックでセット呪紋を切り替え
-  - 北ボタンで選択中の呪紋を使用
-- コントローラーの接続・切断の検出とホットプラグ対応
-- ゲームでサポートされている言語への対応
+- 信仰心のレベルアップで、ランダムなステータスの代わりに常に **CRT** が上昇
+- 上昇量は通常のゲームと同じ
+- 他のスキルには影響しません
+- ゲームを再起動せずに即時反映される、オプションのオン／オフ設定
+- オプションで **BepInEx Configuration Manager** に対応（必須ではありません）
 
 ## 必要環境
 
@@ -271,25 +225,26 @@ GDM Coop Mod の最新リリースはこちらからダウンロードできま�
 - 正規版 **スターオーシャン セカンドストーリーR**
 - [BepInEx](https://github.com/BepInEx/BepInEx) IL2CPP の導入
 - Windows PC 版のゲーム
+- オプション: ゲーム内で設定を変更するための [BepInEx Configuration Manager](https://github.com/BepInEx/BepInEx.ConfigurationManager)（IL2CPP 版）
 
 ### 開発者向け
 
-- Visual Studio 2022
-- .NET 8 SDK
+- Visual Studio 2022（または `dotnet` CLI）
+- .NET SDK
 - BepInEx IL2CPP 開発環境
 - ゲームから生成された IL2CPP インターフェースアセンブリ
 
 ## インストール方法
 
 1. スターオーシャン セカンドストーリーR のゲームフォルダに **BepInEx IL2CPP** を導入します。
-2. [リリースページ](https://github.com/GDSeirya/GDMCoopMod/releases) から最新の **GDMCoopMod.dll** をダウンロードします。
+2. [リリースページ](https://github.com/GDSeirya/Star-Ocean-2-Second-Story-R-Piety-Patch/releases) から最新の **PietyCrit.dll** をダウンロードします。
 3. プラグイン DLL を以下の場所にコピーします:
 
 ```text
 STAR OCEAN THE SECOND STORY R/
 └── BepInEx/
     └── plugins/
-        └── GDMCoopMod.dll
+        └── PietyCrit.dll
 ```
 
 4. ゲームを起動します。
@@ -298,73 +253,43 @@ BepInEx が自動的にプラグインを読み込みます。
 
 > **注意:** ソースコードからビルドする場合は、[ソースコードからビルドする](#ソースコードからビルドする) を参照してください。
 
-## コントローラーとキャラクターの割り当て
+## 設定
 
-この Mod では、コントローラーを選択し、パーティキャラクターに割り当てるためのキーボードショートカットを使用できます。
+初回起動時に、以下の場所に設定ファイルが作成されます:
 
-### コントローラーの選択
+```text
+BepInEx/config/local.so2r.pietycrit.cfg
+```
 
-**F1～F4** を使用して設定するコントローラーを選択します。
+| セクション | 設定 | デフォルト | 説明 |
+|---|---|---|---|
+| General | `Enabled` | `true` | 有効にすると、信仰心のレベルアップで CRT が上昇します。変更は即時に反映されます。 |
 
-| キー | 機能 |
-|---|---|
-| **F1** | コントローラー1を選択 |
-| **F2** | コントローラー2を選択 |
-| **F3** | コントローラー3を選択 |
-| **F4** | コントローラー4を選択 |
-| **F5** | コントローラーと割り当て情報を表示 |
-| **F6** | 選択中のコントローラーの割り当てを解除 |
-| **F7** | すべてのコントローラーの割り当てを解除 |
-
-コントローラーを選択した状態で **F1～F4** を押すと、そのコントローラーを対応するキャラクターに割り当てます。
-
-### AI 制御
-
-以下のキーでゲーム内の AI 制御を切り替えられます:
-
-| キー | 機能 |
-|---|---|
-| **F9** | AI 制御の切り替え |
-
-### 使用例
-
-**コントローラー2** を **キャラクター3** に割り当てる場合:
-
-1. **F2** を押してコントローラー2を選択します。
-2. **F3** を押してコントローラー2をキャラクター3に割り当てます。
-
-コントローラー2の割り当てを解除する場合:
-
-1. **F2** を押してコントローラー2を選択します。
-2. **F6** を押して割り当てを解除します。
-
-すべてのコントローラーの割り当てを解除する場合:
-
-- **F7** を押します。
+**BepInEx Configuration Manager** を導入している場合は、ゲーム内メニューにもこの設定が表示されます。導入していなくても、Mod は同じように動作します。
 
 ## ソースコードからビルドする
 
 リポジトリをクローンします:
 
 ```bash
-git clone https://github.com/GDSeirya/GDMCoopMod.git
+git clone https://github.com/GDSeirya/Star-Ocean-2-Second-Story-R-Piety-Patch.git
 ```
 
-Visual Studio 2022 でソリューションを開きます。
+`PietyCrit.csproj` を開き、`GameDir` をゲームのインストールフォルダに設定します。
 
-以下からプロジェクトをビルドします:
+Visual Studio（**Build → Build Solution**）またはコマンドラインでビルドします:
 
-```text
-Build → Build Solution
+```bash
+dotnet build -c Release
 ```
 
 ビルドされた DLL は以下に生成されます:
 
 ```text
 bin/
-└── Debug/
+└── Release/
     └── net8.0/
-        └── GDMCoopMod.dll
+        └── PietyCrit.dll
 ```
 
 生成された DLL を BepInEx の `plugins` フォルダにコピーして、ゲーム内でテストしてください。
@@ -387,20 +312,16 @@ Mod の実行には以下が必要です:
 
 ### 必須ソフトウェア
 
-- **Visual Studio 2022**
-  - ワークロード: `.NET デスクトップ開発`
-- **.NET 8 SDK**
+- **Visual Studio 2022**（ワークロード: `.NET デスクトップ開発`）または `dotnet` CLI
+- **.NET SDK**
 - **Git**
 
 ### BepInEx 開発アセンブリ
 
-プロジェクトは以下の BepInEx アセンブリを参照します:
+プロジェクトは `BepInEx.Unity.IL2CPP` NuGet パッケージと、BepInEx のインストール先にある以下のアセンブリを参照します:
 
 ```text
 BepInEx/core/
-├── BepInEx.Core.dll
-├── BepInEx.Unity.IL2CPP.dll
-├── 0Harmony.dll
 └── Il2CppInterop.Runtime.dll
 ```
 
@@ -412,12 +333,6 @@ BepInEx を導入し、ゲームを一度起動すると、必要な IL2CPP イ�
 BepInEx/interop/
 ├── Il2Cppmscorlib.dll
 ├── UnityEngine.CoreModule.dll
-├── UnityEngine.IMGUIModule.dll
-├── UnityEngine.UI.dll
-├── UnityEngine.PhysicsModule.dll
-├── UnityEngine.TextRenderingModule.dll
-├── UnityEngine.InputLegacyModule.dll
-├── Unity.InputSystem.dll
 └── Assembly-CSharp.dll
 ```
 
@@ -430,9 +345,9 @@ BepInEx/interop/
 1. ゲームディレクトリに BepInEx IL2CPP を導入します。
 2. ゲームを一度起動して IL2CPP インターフェースアセンブリを生成します。
 3. このリポジトリをクローンします。
-4. プロジェクトの参照先を、ローカルの BepInEx および interop アセンブリに設定します。
-5. Visual Studio 2022 でソリューションを開きます。
-6. ソリューションをビルドします。
+4. `PietyCrit.csproj` の `GameDir` を、ゲームフォルダに合わせて更新します。
+5. Visual Studio 2022 でプロジェクトを開くか、`dotnet` CLI を使用します。
+6. プロジェクトをビルドします。
 
 ## モッディングノート
 
@@ -443,6 +358,15 @@ BepInEx/interop/
 - ゲームアセンブリは BepInEx の IL2CPP インターフェースツールによって生成されます。
 - 開発時にはデコンパイルされたアセンブリを参照します。
 - ランタイムのパッチや変更は BepInEx と Harmony を通じて行われます。
+
+パッチの仕組み:
+
+- `Game.CharacterParameter.SkillLevelupEffect` の信仰心の処理は、ポイントごとにランダムな `CharacterStatus` を選び、`CharacterParameter.IncreaseBaseStatus(status, value)` を呼び出します。
+- 現在のゲームビルドでは、これが `IncreaseBaseStatus` の唯一の呼び出し元です。
+- プラグインは `IncreaseBaseStatus` に Harmony のプレフィックスを適用し、`status` を `CharacterStatus.CRITICAL` に強制します。
+- `SkillLevelupEffect` 自体は意図的にパッチ**していません**。このメソッドは参照型フィールドを含む `ref GameManager.IncreaseResourcesParameter` 構造体を受け取るため、パッチすると起動時に Il2CppInterop から `NullReferenceException` が発生します。
+
+今後のゲームアップデートで `IncreaseBaseStatus` の名前が変わったりインライン化されたりする可能性があります。CRT が変化しなくなった場合は、BepInEx のログを確認してください。
 
 生成されたゲームファイルや IL2CPP インターフェースアセンブリは、意図的にリポジトリへ含めていません。
 
