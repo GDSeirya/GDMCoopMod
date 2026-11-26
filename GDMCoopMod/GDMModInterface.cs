@@ -187,6 +187,50 @@ public class GDMModInterface : MonoBehaviour
                 }
             }
 
+            // Right stick left/right: pick which ally a support spell is cast on.
+            if (GDMCoopPlugin.VirtualControllers.GetState(i).AllyPreviousPressed)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    if (GDMControllerRouting.GetControllerForParty(j) == i)
+                    {
+                        if (BattleAIControllerPatch.CycleAllyTarget(j, -1))
+                        {
+                            GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuSelect);
+                        }
+                    }
+                }
+            }
+
+            if (GDMCoopPlugin.VirtualControllers.GetState(i).AllyNextPressed)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    if (GDMControllerRouting.GetControllerForParty(j) == i)
+                    {
+                        if (BattleAIControllerPatch.CycleAllyTarget(j, 1))
+                        {
+                            GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuSelect);
+                        }
+                    }
+                }
+            }
+
+            // R3: toggle between manual ally targeting and the game's normal targeting.
+            if (GDMCoopPlugin.VirtualControllers.GetState(i).RightStickClickPressed)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    if (GDMControllerRouting.GetControllerForParty(j) == i)
+                    {
+                        if (BattleAIControllerPatch.ToggleNormalSupportTargeting(j))
+                        {
+                            GDMSoundRegistry.PlaySe(GDMSoundRegistry.ModSfx.MenuSelect);
+                        }
+                    }
+                }
+            }
+
             if (GDMCoopPlugin.VirtualControllers.GetState(i).TargetingModePressed)
             {
                 BattleAIControllerPatch.SetHostTargetingMode(i, !BattleAIControllerPatch.GetHostTargetingMode(i));

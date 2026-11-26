@@ -6,9 +6,9 @@
     <Nullable>disable</Nullable>
     <Copyright>GD Seirya &amp; Mithras Seirya</Copyright>
     <Description>A cooperative multiplayer mod for Star Ocean: The Second Story R, built using BepInEx and Unity IL2CPP modding tools.</Description>
-    <PackageReleaseNotes>Add limit to popups and give coop players emote function</PackageReleaseNotes>
-    <AssemblyVersion>1.8.0.0</AssemblyVersion>
-    <FileVersion>1.8.0.0</FileVersion>
+    <PackageReleaseNotes>Co-op players can choose which party member to cast single-target support spells on (right stick left/right)</PackageReleaseNotes>
+    <AssemblyVersion>1.9.0.0</AssemblyVersion>
+    <FileVersion>1.9.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

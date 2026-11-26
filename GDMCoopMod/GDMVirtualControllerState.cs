@@ -20,6 +20,7 @@ namespace GDMCoopMod
         public bool UseMagicHeld;
         public bool EmoteModifierHeld; //right trigger
         public bool WestHeld;
+        public bool RightStickClickHeld; //R3
 
         // PRESS events (onPress)
         public bool AttackPressed;
@@ -33,6 +34,7 @@ namespace GDMCoopMod
         public bool TargetingModePressed;
         public bool UseMagicPressed;
         public bool WestPressed;
+        public bool RightStickClickPressed;
 
         // RELEASE events (onRelease)
         public bool AttackReleased;
@@ -58,25 +60,30 @@ namespace GDMCoopMod
         public bool PrevTargetingMode;
         public bool PrevUseMagic;
         public bool PrevWest;
+        public bool PrevRightStickClick;
 
         // Right stick (analog)
         public Vector2 RightStick;
 
-        // Spell scrolling
+        // Spell scrolling (right stick up/down)
         public bool SpellPreviousPressed;
         public bool SpellNextPressed;
 
-        // Right-stick scrolling state
-        private bool RightStickScrolling;
-        private float RightStickHoldTime;
-        private float RightStickRepeatTimer;
-        private int RightStickDirection;
+        // Ally target scrolling (right stick left/right)
+        public bool AllyPreviousPressed;
+        public bool AllyNextPressed;
+
+        // Right-stick scrolling state. Each axis keeps its own flick/hold/repeat tracking.
+        private readonly StickAxisScroller verticalScroller = new StickAxisScroller();
+        private readonly StickAxisScroller horizontalScroller = new StickAxisScroller();
 
         public void UpdateEvents(float deltaTime)
         {
             // Reset one-frame events.
             SpellPreviousPressed = false;
             SpellNextPressed = false;
+            AllyPreviousPressed = false;
+            AllyNextPressed = false;
 
             AttackPressed = AttackHeld && !PrevAttack;
             AttackReleased = !AttackHeld && PrevAttack;
@@ -109,8 +116,9 @@ namespace GDMCoopMod
             UseMagicReleased = !UseMagicHeld && PrevUseMagic;
 
             WestPressed = WestHeld && !PrevWest;
+            RightStickClickPressed = RightStickClickHeld && !PrevRightStickClick;
 
-            UpdateSpellScrolling(deltaTime);
+            UpdateStickScrolling(deltaTime);
 
             // Update previous frame states
             PrevAttack = AttackHeld;
@@ -124,6 +132,7 @@ namespace GDMCoopMod
             PrevTargetingMode = TargetingModeHeld;
             PrevUseMagic = UseMagicHeld;
             PrevWest = WestHeld;
+            PrevRightStickClick = RightStickClickHeld;
         }
 
         public void Clear()
@@ -145,6 +154,7 @@ namespace GDMCoopMod
             UseMagicHeld = false;
             EmoteModifierHeld = false;
             WestHeld = false;
+            RightStickClickHeld = false;
 
             // Press events
             AttackPressed = false;
@@ -158,6 +168,7 @@ namespace GDMCoopMod
             TargetingModePressed = false;
             UseMagicPressed = false;
             WestPressed = false;
+            RightStickClickPressed = false;
 
             // Release events
             AttackReleased = false;
@@ -183,98 +194,127 @@ namespace GDMCoopMod
             PrevTargetingMode = false;
             PrevUseMagic = false;
             PrevWest = false;
+            PrevRightStickClick = false;
 
-            RightStickScrolling = false;
-            RightStickHoldTime = 0f;
-            RightStickRepeatTimer = 0f;
-            RightStickDirection = 0;
+            SpellPreviousPressed = false;
+            SpellNextPressed = false;
+            AllyPreviousPressed = false;
+            AllyNextPressed = false;
+
+            verticalScroller.Reset();
+            horizontalScroller.Reset();
         }
 
-        private void UpdateSpellScrolling(float deltaTime)
+        private void UpdateStickScrolling(float deltaTime)
         {
-            const float flickThreshold = 0.7f;
-            const float resetThreshold = 0.3f;
-            const float holdDelay = 0.4f;
+            float absX = Mathf.Abs(RightStick.x);
+            float absY = Mathf.Abs(RightStick.y);
 
-            // Stick returned to center.
-            if (Mathf.Abs(RightStick.y) < resetThreshold)
-            {
-                RightStickScrolling = false;
-                RightStickHoldTime = 0f;
-                RightStickRepeatTimer = 0f;
-                RightStickDirection = 0;
+            // Only the dominant axis may scroll, so a diagonal push doesn't change
+            // the spell and the target at the same time.
+            bool verticalDominant = absY > absX;
+            bool horizontalDominant = absX > absY;
 
-                return;
-            }
-
-            int direction = 0;
-
-            // Up = previous
-            if (RightStick.y > flickThreshold)
-                direction = -1;
-
-            // Down = next
-            else if (RightStick.y < -flickThreshold)
-                direction = 1;
-
-            if (direction == 0)
-                return;
-
-            // First flick.
-            if (!RightStickScrolling)
-            {
-                RightStickScrolling = true;
-                RightStickDirection = direction;
-                RightStickHoldTime = 0f;
-                RightStickRepeatTimer = 0f;
-
-                TriggerSpellScroll(direction);
-
-                return;
-            }
-
-            // Direction changed while the stick is still held.
-            if (RightStickDirection != direction)
-            {
-                RightStickDirection = direction;
-                RightStickHoldTime = 0f;
-                RightStickRepeatTimer = 0f;
-
-                TriggerSpellScroll(direction);
-
-                return;
-            }
-
-            RightStickHoldTime += deltaTime;
-
-            // Wait before starting automatic scrolling.
-            if (RightStickHoldTime < holdDelay)
-                return;
-
-            RightStickRepeatTimer -= deltaTime;
-
-            if (RightStickRepeatTimer > 0f)
-                return;
-
-            TriggerSpellScroll(direction);
-
-            // Gradually increase scrolling speed.
-            float repeatInterval = Mathf.Lerp(
-                0.15f,
-                0.07f,
-                Mathf.Clamp01((RightStickHoldTime - holdDelay) / 2f)
-            );
-
-            RightStickRepeatTimer = repeatInterval;
-        }
-
-        private void TriggerSpellScroll(int direction)
-        {
-            if (direction < 0)
+            // Up = previous spell, Down = next spell.
+            int spellDirection = verticalScroller.Update(-RightStick.y, verticalDominant, deltaTime);
+            if (spellDirection < 0)
                 SpellPreviousPressed = true;
-            else
+            else if (spellDirection > 0)
                 SpellNextPressed = true;
+
+            // Left = previous ally, Right = next ally.
+            int allyDirection = horizontalScroller.Update(RightStick.x, horizontalDominant, deltaTime);
+            if (allyDirection < 0)
+                AllyPreviousPressed = true;
+            else if (allyDirection > 0)
+                AllyNextPressed = true;
         }
 
+        /// <summary>
+        /// Turns one stick axis into repeated "previous/next" events:
+        /// an immediate event on the first flick, then auto-repeat (speeding up) while held.
+        /// </summary>
+        private class StickAxisScroller
+        {
+            private const float FlickThreshold = 0.7f;
+            private const float ResetThreshold = 0.3f;
+            private const float HoldDelay = 0.4f;
+
+            private bool scrolling;
+            private float holdTime;
+            private float repeatTimer;
+            private int direction;
+
+            public void Reset()
+            {
+                scrolling = false;
+                holdTime = 0f;
+                repeatTimer = 0f;
+                direction = 0;
+            }
+
+            /// <summary>
+            /// Returns -1 (negative direction), +1 (positive direction) or 0 (no event this frame).
+            /// </summary>
+            public int Update(float axisValue, bool isDominantAxis, float deltaTime)
+            {
+                // Stick returned to center (or the other axis took over).
+                if (!isDominantAxis || Mathf.Abs(axisValue) < ResetThreshold)
+                {
+                    Reset();
+                    return 0;
+                }
+
+                int newDirection = 0;
+
+                if (axisValue > FlickThreshold)
+                    newDirection = 1;
+                else if (axisValue < -FlickThreshold)
+                    newDirection = -1;
+
+                if (newDirection == 0)
+                    return 0;
+
+                // First flick.
+                if (!scrolling)
+                {
+                    scrolling = true;
+                    direction = newDirection;
+                    holdTime = 0f;
+                    repeatTimer = 0f;
+                    return newDirection;
+                }
+
+                // Direction changed while the stick is still held.
+                if (direction != newDirection)
+                {
+                    direction = newDirection;
+                    holdTime = 0f;
+                    repeatTimer = 0f;
+                    return newDirection;
+                }
+
+                holdTime += deltaTime;
+
+                // Wait before starting automatic scrolling.
+                if (holdTime < HoldDelay)
+                    return 0;
+
+                repeatTimer -= deltaTime;
+
+                if (repeatTimer > 0f)
+                    return 0;
+
+                // Gradually increase scrolling speed.
+                float repeatInterval = Mathf.Lerp(
+                    0.15f,
+                    0.07f,
+                    Mathf.Clamp01((holdTime - HoldDelay) / 2f)
+                );
+
+                repeatTimer = repeatInterval;
+                return newDirection;
+            }
+        }
     }
 }

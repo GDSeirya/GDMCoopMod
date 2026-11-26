@@ -126,6 +126,363 @@ public static class BattleAIControllerPatch
             (spellIndex[partyIndex] - 1 + spells.Count) % spells.Count;
     }
 
+    // ------------------------------------------------------------------
+    // Ally targeting for single-target support spells identified by system
+    // ------------------------------------------------------------------
+
+    // Index = casting party member. Value = list/party index of the ally that caster will target.
+    // Defaults to the caster themselves; reset at the start of every battle.
+    private static int[] allyTargetIndex = new int[4] { 0, 1, 2, 3 };
+
+    // True = this caster uses the game's normal targeting for support spells (toggled with R3).
+    private static bool[] useNormalSupportTargeting = new bool[4] { false, false, false, false };
+
+    // Cache of "is this spell a single-ally support spell?" so we only ask the game once per spell.
+    private static Dictionary<BattleSkillID, bool> supportSpellCache = new Dictionary<BattleSkillID, bool>();
+
+    /// <summary>
+    /// Determines who the target is based on the index.
+    /// </summary>
+    /// <returns>
+    /// Returns the selected ally index for each casting party member.
+    /// </returns>
+    public static int[] GetAllyTargetIndex()
+    {
+        return allyTargetIndex;
+    }
+
+    /// <summary>
+    /// True if the spell targets a single ally (the game's own TargetType.PLAYER),
+    /// e.g. Heal, Cure Light, Antidote, Haste, Bless. Self-only and party-wide spells return false
+    /// because there is nothing to choose for them.
+    /// </summary>
+    /// <returns>
+    /// Returns the definition if the spell counts as a support spell based on the game's definition.
+    /// </returns>
+    public static bool IsSupportSpell(BattleSkillID skillId)
+    {
+        if (skillId == BattleSkillID.INVALID)
+        {
+            return false;
+        }
+
+        // Revive spells always count, so they can be aimed at a downed ally.
+        if (IsReviveSpell(skillId))
+        {
+            return true;
+        }
+
+        bool isSupport;
+        if (supportSpellCache.TryGetValue(skillId, out isSupport))
+        {
+            return isSupport;
+        }
+
+        // If it's not found in support spell cache, potentially enter in a new one so we don't have to again.
+        try
+        {
+            ConstBattleSkillParameter parameter = ParameterManager.Instance.GetBattleSkillParameter(skillId);
+            if (parameter == null)
+            {
+                return false; // Not cached, parameters may not be loaded yet.
+            }
+            isSupport = parameter.TargetType == TargetType.PLAYER;
+            supportSpellCache[skillId] = isSupport;
+            return isSupport;
+        }
+        catch (Exception e)
+        {
+            GDMCoopPlugin.StaticLog.LogWarning("Could not read target type for " + skillId + ": " + e.Message);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// True if this caster is using the game's normal targeting for support spells, toggled with R3 or
+    /// because Raise Dead is selected and nobody is down (nothing valid to pick).
+    /// While Raise Dead is selected and someone is down, this also moves the selection onto a downed ally.
+    /// </summary>
+    /// <returns>
+    /// Returns a boolean value suggesting if we are using the default casting method, otherwise false.
+    /// </returns>
+    public static bool IsNormalSupportTargeting(int partyIndex)
+    {
+        // Check if target is valid and within the bounds of the party index.
+        if (partyIndex < 0 || partyIndex >= useNormalSupportTargeting.Length)
+        {
+            return false;
+        }
+            
+        // Check if the party index selected is using normal targeting.
+        if (useNormalSupportTargeting[partyIndex])
+        {
+            return true;
+        }
+            
+        // Check if the spell is not a revive spell from the selected party index.
+        if (!IsReviveSpell(GetSelectedSpell(partyIndex)))
+        {
+            return false;
+        }
+        
+        // Check if a battle manager exists.
+        BattleManager battleManager = BattleManager.GetInstance();
+        if (battleManager == null)
+        {
+            return false;
+        }
+        
+        // Check if there are no valid players.
+        var players = battleManager.battlePlayerList;
+        if (players == null || players.Count == 0)
+        {
+            return false;
+        }
+
+        // Clamping logic.
+        int count = players.Count;
+        int current = allyTargetIndex[partyIndex];
+        if (current < 0 || current >= count)
+        {
+            current = partyIndex < count ? partyIndex : 0;
+        }
+
+        // Keep the current pick if it's already someone who is down, otherwise take the next downed ally.
+        for (int i = 0; i < count; i++)
+        {
+            int candidate = (current + i) % count;
+            BattlePlayer candidatePlayer = players[candidate];
+
+            if (candidatePlayer != null && candidatePlayer.IsDead())
+            {
+                allyTargetIndex[partyIndex] = candidate;
+                return false;
+            }
+        }
+
+        // Nobody is down: fall back to the game's normal targeting.
+        return true;
+    }
+
+    /// <summary>
+    /// Switches a caster between manual ally targeting and the game's normal targeting.
+    /// Does nothing unless a support spell is selected. Returns true if the mode changed.
+    /// </summary>
+    /// <returns>
+    /// Returns a boolean value determining whether to use the default target system or the mod's.
+    /// </returns>
+    public static bool ToggleNormalSupportTargeting(int partyIndex)
+    {
+        if (partyIndex < 0 || partyIndex >= useNormalSupportTargeting.Length)
+        {
+            return false;
+        }
+
+        if (IsHostControlled(partyIndex) || !IsSupportSpellSelected(partyIndex))
+        {
+            return false;
+        }
+
+        useNormalSupportTargeting[partyIndex] = !useNormalSupportTargeting[partyIndex];
+        return true;
+    }
+
+    /// <summary>
+    /// True if this party member is the character the host is currently controlling.
+    /// The host uses the game's own menus and targeting, so the co-op ally selection never applies to them.
+    /// </summary>
+    /// <returns>
+    /// Returns a boolean value determining if the party member in question is controlled by the host.
+    /// </returns>
+    public static bool IsHostControlled(int partyIndex)
+    {
+        BattleManager battleManager = BattleManager.GetInstance();
+        return battleManager != null && battleManager.ControlPlayerIndex == partyIndex;
+    }
+
+    /// <summary>
+    /// True for spells that bring a downed ally back. These can only target downed allies.
+    /// </summary>
+    /// <returns>
+    /// Returns a boolean value determining the spell passed can target downed allies.
+    /// </returns>
+    public static bool IsReviveSpell(BattleSkillID skillId)
+    {
+        return skillId == BattleSkillID.M_RAISEDEAD;
+    }
+
+    /// <summary>
+    /// Returns the spell this party member currently has selected, else return invalid.
+    /// </summary>
+    /// <returns>
+    /// Returns a battle skill id for the selected spell of a selected party.
+    /// </returns>
+    public static BattleSkillID GetSelectedSpell(int partyIndex)
+    {
+        if (partyIndex < 0 || partyIndex >= spellIndex.Length)
+        {
+            return BattleSkillID.INVALID;
+        }
+
+        List<BattleSkillID> spells = listOfCharacterSpells[partyIndex];
+        int index = spellIndex[partyIndex];
+
+        if (spells == null || index < 0 || index >= spells.Count)
+        {
+            return BattleSkillID.INVALID;
+        }
+
+        return spells[index];
+    }
+
+    /// <summary>
+    /// True if the party member currently has a single-ally support spell selected.
+    /// </summary>
+    /// <returns>
+    /// Returns a boolean value determining if the party index has a support spell selected.
+    /// </returns>
+    public static bool IsSupportSpellSelected(int partyIndex)
+    {
+        return IsSupportSpell(GetSelectedSpell(partyIndex));
+    }
+
+    /// <summary>
+    /// Moves a caster's ally selection to the previous (-1) or next (+1) living party member.
+    /// Does nothing unless a support spell is selected.
+    /// </summary>
+    /// <returns>
+    /// Returns true if the selection changes.
+    /// </returns>
+    public static bool CycleAllyTarget(int partyIndex, int direction)
+    {
+        if (partyIndex < 0 || partyIndex >= allyTargetIndex.Length || direction == 0)
+        {
+            return false;
+        }
+
+        if (IsHostControlled(partyIndex) || !IsSupportSpellSelected(partyIndex))
+        {
+            return false;
+        }
+
+        BattleManager battleManager = BattleManager.GetInstance();
+        if (battleManager == null)
+        {
+            return false;
+        }
+
+        var players = battleManager.battlePlayerList;
+        if (players == null || players.Count == 0)
+        {
+            return false;
+        }
+
+        int count = players.Count;
+        int current = allyTargetIndex[partyIndex];
+        if (current < 0 || current >= count)
+        {
+            current = partyIndex < count ? partyIndex : 0;
+        }
+
+        int step = direction > 0 ? 1 : -1;
+
+        // Revive spells can only be aimed at downed allies; everything else only at living ones.
+        bool wantDead = IsReviveSpell(GetSelectedSpell(partyIndex));
+
+        // Moving the stick left/right while on normal targeting switches back to manual targeting.
+        useNormalSupportTargeting[partyIndex] = false;
+
+        // Walk around the party, skipping anyone who doesn't fit the spell.
+        for (int i = 1; i <= count; i++)
+        {
+            int candidate = (((current + step * i) % count) + count) % count;
+            BattlePlayer candidatePlayer = players[candidate];
+
+            if (candidatePlayer != null && candidatePlayer.IsDead() == wantDead)
+            {
+                allyTargetIndex[partyIndex] = candidate;
+                return candidate != current;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Returns the ally this caster picked for a support spell, or null if the spell isn't a
+    /// single-ally support spell or the picked ally is gone/down which is the default system.
+    /// </summary>
+    private static BattleCharacter GetSelectedAllyTarget(int partyIndex, BattleSkillID skillId)
+    {
+        if (partyIndex < 0 || partyIndex >= allyTargetIndex.Length)
+        {
+            return null;
+        }
+
+        if (!IsSupportSpell(skillId))
+        {
+            return null;
+        }
+
+        // Normal targeting (toggled, or Raise Dead with nobody down): let the game pick.
+        if (IsNormalSupportTargeting(partyIndex))
+        {
+            return null;
+        }
+
+        BattleManager battleManager = BattleManager.GetInstance();
+        if (battleManager == null)
+        {
+            return null;
+        }
+
+        var players = battleManager.battlePlayerList;
+        int target = allyTargetIndex[partyIndex];
+
+        if (players == null || target < 0 || target >= players.Count)
+        {
+            return null;
+        }
+
+        BattlePlayer targetPlayer = players[target];
+        if (targetPlayer == null)
+        {
+            return null;
+        }
+
+        // Revive spells need a downed target, other spells a living one. Otherwise the game's own targeting is used.
+        if (targetPlayer.IsDead() != IsReviveSpell(skillId))
+        {
+            return null;
+        }
+
+        return targetPlayer;
+    }
+
+#if DEBUG
+    /// <summary>
+    /// Writes each spell's target type to the BepInEx log once per battle start, which makes it easy to check
+    /// which spells the mod treats as support spells.
+    /// </summary>
+    private static void LogSpellList(int partyIndex)
+    {
+        try
+        {
+            List<BattleSkillID> spells = listOfCharacterSpells[partyIndex];
+            for (int i = 0; i < spells.Count; i++)
+            {
+                GDMCoopPlugin.StaticLog.LogInfo(
+                    "Party " + (partyIndex + 1) + " spell " + spells[i] +
+                    (IsSupportSpell(spells[i]) ? " -> ally target selectable" : " -> default targeting"));
+            }
+        }
+        catch (Exception e)
+        {
+            GDMCoopPlugin.StaticLog.LogWarning("Could not log spell list: " + e.Message);
+        }
+    }
+#endif
+
     /// <summary>
     /// Returns 4 lists of BattleSkillIds
     /// </summary>
@@ -166,21 +523,6 @@ public static class BattleAIControllerPatch
         }
     }
 
-    public static BattleSkillState GetLastBattleSkill(BattleDefine.RootType rootType, int partyIndex)
-    {
-        if (partyIndex >= 0 && partyIndex <= 3)
-        {
-            switch (rootType)
-            {
-                case BattleDefine.RootType.Left:
-                    return lastLeftBattleSkill[partyIndex];
-                case BattleDefine.RootType.Right:
-                    return lastRightBattleSkill[partyIndex];
-            }
-        }
-        return new BattleSkillState();
-    }
-
     private static BattleSkillState[] lastLeftBattleSkill = new BattleSkillState[4]
     {
     new BattleSkillState(BattleSkillID.INVALID, 0),
@@ -207,7 +549,6 @@ public static class BattleAIControllerPatch
             useHostTarget[index] = isEnabled;
         }
     }
-
 
     /// <summary>
     /// Gets from memory if the index controller targets host or not
@@ -366,23 +707,6 @@ public static class BattleAIControllerPatch
         }
     }
 
-    private static void ResetMPNotificationTarget()
-    {
-        GameUIManager uiManager = GameUIManager.GetInstance();
-        if (uiManager != null)
-        {
-            if (BattleManager.GetInstance() != null)
-            {
-                UIBattleController uiBattleController = uiManager.UIBattleController;
-                BattleManager battleManager = BattleManager.GetInstance();
-                Vector3 offset = UIBattleController.StaminaWorldOffset;
-                uiBattleController.warningMPPresenter.Set(battleManager.GetControlPlayer().transform, uiBattleController.myCanvas, ref offset);
-                uiBattleController.ShowWarningMP();
-            }
-        }
-    }
-
-
     //Start of AIRun
     [HarmonyPrefix]
     public static bool Prefix(ref BattleAIController __instance)
@@ -398,6 +722,9 @@ public static class BattleAIControllerPatch
                 {
                     //Init special case for spellcasters
                     listOfCharacterSpells[__instance.OwnerObject.indexInParty].Clear();
+                    //Default ally target is the caster themselves at the start of each battle
+                    allyTargetIndex[__instance.OwnerObject.indexInParty] = __instance.OwnerObject.indexInParty;
+                    useNormalSupportTargeting[__instance.OwnerObject.indexInParty] = false;
                     if (        
                         (PlayerID)__instance.OwnerObject.CharacterID == PlayerID.RENA ||
                         (PlayerID)__instance.OwnerObject.CharacterID == PlayerID.CELINE ||
@@ -423,6 +750,9 @@ public static class BattleAIControllerPatch
                             }
                             //Clamp spell index so it's not out of bounds
                             ClampSpellIndex(__instance.OwnerObject.indexInParty);
+#if DEBUG
+                            LogSpellList(__instance.OwnerObject.indexInParty);
+#endif
                         }
                         casterBehavior = null;
                     }
@@ -788,7 +1118,13 @@ public static class BattleAIControllerPatch
                                         if (__instance.OwnerObject.battleCharacterParameter.CanUseBattleSkill(skillId))
                                         {
                                             BattleCharacter targetToCheck = __instance.OwnerObject.GetCharacterController().GetTargetOnAction(skillId);
-                                            if (targetToCheck.IsPlayerSide() || useHostTarget[controllerIndex])
+                                            //Support spells go to the ally picked with right stick left/right
+                                            BattleCharacter allyTarget = GetSelectedAllyTarget(__instance.OwnerObject.indexInParty, skillId);
+                                            if (allyTarget != null)
+                                            {
+                                                actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId, allyTarget);
+                                            }
+                                            else if (targetToCheck.IsPlayerSide() || useHostTarget[controllerIndex])
                                             {
                                                 actionResult = __instance.OwnerObject.GetCharacterController().OnBattleSkill(skillId);
                                             }

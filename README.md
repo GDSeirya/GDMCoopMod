@@ -24,8 +24,10 @@ Current features:
 - Spellcaster support:
   - Switch between Set Spells using the right stick
   - Cast the selected spell using the north button
+  - Choose which party member support spells (Heal, Haste, Bless, Raise Dead, etc.) are cast on using the right stick left/right, and press R3 to go back to the game's normal targeting
 - Controller hot-plugging and automatic controller detection
 - Support for the game's supported languages
+- Overworld emotion bubbles for coop players (face buttons, or right trigger + face button)
 
 ## Requirements
 
@@ -104,6 +106,46 @@ To remove Controller 2 from its assigned character:
 To remove all controller assignments:
 
 - Press **F7**.
+
+## Overworld Emotes
+
+Coop players can show the game's emotion bubbles above their character while exploring the overworld. There are two sets of four emotes:
+
+| Input | Default emotion |
+|---|---|
+| **South (A / Cross)** | Exclamation |
+| **East (B / Circle)** | Question |
+| **West (X / Square)** | Heart |
+| **North (Y / Triangle)** | Note |
+| **RT + South** | Laugh |
+| **RT + East** | Angry |
+| **RT + West** | Gloomy |
+| **RT + North** | LightBulb |
+
+- The bubble appears over the character that controller is assigned to.
+- Emotes only work while you can move freely: not in battle, events, or the camp menu.
+- The host (controller 1) is excluded by default, because the game still reads the host's face buttons. Enable it with `Host Emotes` in the config. The host only uses the **RT + face button** set, so talking and confirming are never affected.
+- Every button's emotion, the duration, and the on/off toggle are in the config file (`BepInEx/config/gdm.coopmod.cfg`), created automatically on first launch. Changes apply the next time the game starts. Available emotions (use the number): 0 Sweat, 1 Exclamation, 2 Question, 3 Notice, 4 Angry, 5 Note, 6 Gloomy, 7 Heart, 8 LightBulb, 9 ColdSweat, 10 Laugh, 11 TurnPale, 12 Exclamation2, 13 Silence, 14 SweatReverse, 15 NoticeReverse, 16 Sleep.
+
+## Casting Support Spells on Allies
+
+Spellcasters (Rena, Celine, Leon, Noel) controlled by a co-op player can choose which party member their single-target support spells are cast on.
+
+| Input | Function |
+|---|---|
+| **Right stick up/down** | Switch the selected spell |
+| **Right stick left/right** | Switch the ally targeted by a support spell |
+| **R3 (right stick click)** | Toggle between choosing the ally yourself and the game's normal targeting |
+| **North (Y / Triangle)** | Cast the selected spell |
+
+- While a support spell is selected, an **arrow and the player number** (for example `> P2`) appear to the left of the HUD slot of the party member that spell will be cast on. Each player has their own colour, and if several players target the same ally their markers sit side by side.
+- The ally selection only changes while a support spell is selected. It skips party members who are down, except for Raise Dead, which can only be aimed at downed party members. If nobody is down, Raise Dead switches to normal targeting (no marker) on its own.
+- At the start of each battle every caster targets themselves until the player picks someone else.
+- Press **R3** to go back to the game's normal targeting. The marker disappears while normal targeting is active. Moving the right stick left/right switches back to choosing an ally.
+- If the chosen ally is down or missing when the spell is cast, the game's default targeting is used instead.
+- Offensive spells, self-only spells and party-wide spells have nothing to choose and keep their normal targeting.
+- This system is for co-op players only. The host (controller 1) keeps the game's own menus and targeting, so they can still pause and cast their spells as usual. The same applies to whichever character the host is currently controlling.
+- Which spells count as single-target support spells is read from the game's own spell data (spells that target one ally). At the start of each battle the mod writes every caster's spells and how they are treated to the BepInEx log.
 
 ## Building From Source
 
@@ -261,8 +303,10 @@ GDM Coop Mod の最新リリースはこちらからダウンロードできま�
 - 術師への対応:
   - 右スティックでセット呪紋を切り替え
   - 北ボタンで選択中の呪紋を使用
+  - 右スティックの左右で、回復・補助呪紋（ヒール、ヘイスト、ブレス、レイズデッドなど）の対象となる仲間を選択。R3でゲーム標準の対象選択に戻る
 - コントローラーの接続・切断の検出とホットプラグ対応
 - ゲームでサポートされている言語への対応
+- フィールドでの感情マーク（吹き出し）表示（フェイスボタン／右トリガー＋フェイスボタン）
 
 ## 必要環境
 
@@ -341,6 +385,46 @@ BepInEx が自動的にプラグインを読み込みます。
 すべてのコントローラーの割り当てを解除する場合:
 
 - **F7** を押します。
+
+## フィールドでの感情マーク
+
+協力プレイのプレイヤーは、フィールド探索中にゲーム内の感情マーク（吹き出し）を自分のキャラクターの頭上に表示できます。4種類ずつ、2セットあります。
+
+| 入力 | デフォルトの感情 |
+|---|---|
+| **下ボタン（A / ×）** | びっくり |
+| **右ボタン（B / ○）** | はてな |
+| **左ボタン（X / □）** | ハート |
+| **上ボタン（Y / △）** | 音符 |
+| **RT + 下ボタン** | 笑い |
+| **RT + 右ボタン** | 怒り |
+| **RT + 左ボタン** | 落ち込み |
+| **RT + 上ボタン** | ひらめき |
+
+- コントローラーが割り当てられているキャラクターの頭上に表示されます。
+- 自由に移動できる状態でのみ使用できます（戦闘中、イベント中、キャンプメニュー中は使用不可）。
+- ホスト（コントローラー1）は、ゲームがホストのフェイスボタンを引き続き読み取るため、デフォルトでは対象外です。設定ファイルの `Host Emotes` で有効にできます。ホストは **RT + フェイスボタン** のセットのみ使用でき、会話や決定操作には影響しません。
+- 各ボタンの感情、表示時間、オン／オフは設定ファイル（`BepInEx/config/gdm.coopmod.cfg`）で変更できます。設定ファイルは初回起動時に自動で作成されます。変更は次回のゲーム起動時に反映されます。使用できる感情（番号で指定）: 0 Sweat, 1 Exclamation, 2 Question, 3 Notice, 4 Angry, 5 Note, 6 Gloomy, 7 Heart, 8 LightBulb, 9 ColdSweat, 10 Laugh, 11 TurnPale, 12 Exclamation2, 13 Silence, 14 SweatReverse, 15 NoticeReverse, 16 Sleep
+
+## 仲間への補助呪紋の使用
+
+協力プレイヤーが操作する術師（レナ、セリーヌ、レオン、ノエル）は、単体対象の回復・補助呪紋をかける仲間を選べます。
+
+| 入力 | 機能 |
+|---|---|
+| **右スティック上下** | 呪紋の切り替え |
+| **右スティック左右** | 補助呪紋の対象となる仲間の切り替え |
+| **R3（右スティック押し込み）** | 対象を自分で選ぶ方式とゲーム標準の対象選択を切り替え |
+| **北ボタン（Y / △）** | 選択中の呪紋を使用 |
+
+- 補助呪紋を選択している間、その呪紋の対象となる仲間のHUD欄の左側に、**矢印とプレイヤー番号**（例: `> P2`）が表示されます。プレイヤーごとに色が異なり、複数のプレイヤーが同じ仲間を対象にしている場合は、マークが横に並んで表示されます。
+- 対象の切り替えは補助呪紋を選択している間のみ行えます。戦闘不能の仲間はスキップされますが、蘇生呪紋（レイズデッド）は戦闘不能の仲間のみを対象にできます。誰も戦闘不能でない場合、レイズデッドは自動的にゲーム標準の対象選択（マークなし）になります。
+- 戦闘開始時は、各術師は自分自身が対象になっています。
+- **R3** を押すと、ゲーム標準の対象選択に戻ります。このとき表示（マーク）は消えます。右スティックを左右に倒すと、再び仲間を選ぶ方式に戻ります。
+- 呪紋の使用時に選択中の仲間が戦闘不能またはいない場合は、ゲーム標準の対象選択が使われます。
+- 攻撃呪紋、自分専用の呪紋、全体呪紋は選択する対象がないため、通常どおりの対象選択になります。
+- この機能は協力プレイヤー専用です。ホスト（コントローラー1）にはゲーム標準のメニューと対象選択がそのまま使われるため、これまでどおりポーズして呪紋を使用できます。ホストが現在操作しているキャラクターも同様です。
+- 単体対象の補助呪紋かどうかは、ゲーム内の呪紋データ（仲間1人を対象とする呪紋）から判定されます。戦闘開始時に、各術師の呪紋とその扱いが BepInEx のログに出力されます。
 
 ## ソースコードからビルドする
 

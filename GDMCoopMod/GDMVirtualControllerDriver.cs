@@ -169,9 +169,12 @@ namespace GDMCoopMod
                 state.TargetingModeHeld = pad.leftTrigger.isPressed;
                 state.UseMagicHeld = pad.buttonNorth.isPressed;
 
-                // Overworld emotes: right trigger is the modifier, West is the 4th emote button.
+                // Overworld emotes: right trigger is the modifier, west is the 4th emote button.
                 state.EmoteModifierHeld = pad.rightTrigger.isPressed;
                 state.WestHeld = pad.buttonWest.isPressed;
+
+                // R3 (right stick click): toggles support spell targeting between manual and normal.
+                state.RightStickClickHeld = pad.rightStickButton.isPressed;
 
                 // Calculate press/release events.
                 state.UpdateEvents(Time.deltaTime);
@@ -219,6 +222,7 @@ namespace GDMCoopMod
 
             state.EmoteModifierHeld = false;
             state.WestHeld = false;
+            state.RightStickClickHeld = false;
         }
     }
 }

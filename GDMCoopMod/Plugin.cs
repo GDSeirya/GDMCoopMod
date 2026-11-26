@@ -5,7 +5,7 @@ using BepInEx.Unity.IL2CPP;
 using GDMCoopMod;
 using HarmonyLib;
 
-[BepInPlugin("gdm.coopmod", "GDM Coop Plugin", "1.8.0")]
+[BepInPlugin("gdm.coopmod", "GDM Coop Plugin", "1.9.0")]
 public class GDMCoopPlugin : BasePlugin
 {
     public static ManualLogSource StaticLog;
@@ -96,7 +96,7 @@ public class GDMCoopPlugin : BasePlugin
         AssignConfiguredController(3, player4Character.Value);
 
 
-        StaticLog.LogInfo("GDM Coop Plugin loaded v1.7.4");
+        StaticLog.LogInfo("GDM Coop Plugin loaded v1.9.0");
     }
 
 
